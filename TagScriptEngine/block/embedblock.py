@@ -39,20 +39,28 @@ def set_dynamic_url(embed: Embed, attribute: str, value: str):
 
 
 def add_field(embed: Embed, _: str, payload: str):
+    if (data := helper_split(payload, 3)) is None:
+        raise EmbedParseError("`add_field` payload was not split by |")
     try:
-        name, value, _inline = helper_split(payload, 3)
+        name, value, _inline = data
         inline = implicit_bool(_inline)
         if inline is None:
             raise EmbedParseError(
-                f"`inline` argument for `add_field` is not a boolean value (_inline)"
+                "`inline` argument for `add_field` is not a boolean value (_inline)"
             )
     except ValueError:
-        try:
-            name, value = helper_split(payload, 2)
-        except ValueError as exc:
-            raise EmbedParseError("`add_field` payload was not split by |") from exc
+        name, value = helper_split(payload, 2)
         inline = False
     embed.add_field(name=name, value=value, inline=inline)
+
+
+def set_footer(embed: Embed, _: str, payload: str):
+    data = helper_split(payload, 2)
+    if data is None:
+        embed.set_footer(text=payload)
+    else:
+        text, icon_url = data
+        embed.set_footer(text=text, icon_url=icon_url)
 
 
 class EmbedBlock(Block):
@@ -93,6 +101,7 @@ class EmbedBlock(Block):
     *   ``url``
     *   ``thumbnail``
     *   ``image``
+    *   ``footer``
     *   ``field`` - (See below)
 
     Adding a field to an embed requires the payload to be split by ``|``, into
@@ -112,6 +121,7 @@ class EmbedBlock(Block):
         {embed(title):Rules}
         {embed(description):Follow these rules to ensure a good experience in our server!}
         {embed(field):Rule 1|Respect everyone you speak to.|false}
+        {embed(footer):Thanks for reading!|{guild(icon)}}
 
     Both methods can be combined to create an embed in a tag.
     The following tagscript uses JSON to create an embed with fields and later
@@ -134,6 +144,7 @@ class EmbedBlock(Block):
         "thumbnail": set_dynamic_url,
         "image": set_dynamic_url,
         "field": add_field,
+        "footer": set_footer,
     }
 
     @staticmethod

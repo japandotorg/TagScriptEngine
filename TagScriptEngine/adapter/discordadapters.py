@@ -3,7 +3,7 @@ from random import choice
 import discord
 
 from ..interface import Adapter
-from ..utils import escape_content, DPY2
+from ..utils import DPY2, escape_content
 from ..verb import Verb
 
 __all__ = (
@@ -93,6 +93,8 @@ class MemberAdapter(AttributeAdapter):
         The author's account creation date as a UTC timestamp.
     joined_at
         The date the author joined the server.
+    joinstamp
+        The author's join date as a UTC timestamp.
     mention
         A formatted text that pings the author.
     bot
@@ -107,13 +109,15 @@ class MemberAdapter(AttributeAdapter):
 
     def update_attributes(self):
         avatar_url = self.object.display_avatar.url if DPY2 else self.object.avatar_url
+        joined_at = getattr(self.object, "joined_at", self.object.created_at)
         additional_attributes = {
             "color": self.object.color,
             "colour": self.object.color,
             "nick": self.object.display_name,
             "avatar": (avatar_url, False),
             "discriminator": self.object.discriminator,
-            "joined_at": getattr(self.object, "joined_at", self.object.created_at),
+            "joined_at": joined_at,
+            "joinstamp": int(joined_at.timestamp()),
             "mention": self.object.mention,
             "bot": self.object.bot,
             "top_role": getattr(self.object, "top_role", ""),

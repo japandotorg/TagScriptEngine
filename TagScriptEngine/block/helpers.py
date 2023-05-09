@@ -100,10 +100,11 @@ def helper_split(
     args = (maxsplit,) if maxsplit is not None else ()
     if "|" in split_string:
         return SPLIT_REGEX.split(split_string, *args)
-    if easy and "~" in split_string:
-        return split_string.split("~", *args)
-    if easy and "," in split_string:
-        return split_string.split(",", *args)
+    if easy:
+        if "~" in split_string:
+            return split_string.split("~", *args)
+        if "," in split_string:
+            return split_string.split(",", *args)
     return
 
 
