@@ -1,14 +1,20 @@
 import re
 from inspect import isawaitable
-from typing import Any, Awaitable, Callable, Union
+from typing import Any, Awaitable, Callable, T, TypeVar, Union
 
-__all__ = ("escape_content", "maybe_await")
+import discord
+
+__all__ = ("escape_content", "maybe_await", "DPY2")
+
+T = TypeVar("T")
+
+DPY2 = discord.version_info >= (2, 0, 0, "alpha", 0)
 
 pattern = re.compile(r"(?<!\\)([{():|}])")
 
 
 def _sub_match(match: re.Match) -> str:
-    return "\\" + match.group(1)
+    return "\\" + match[1]
 
 
 def escape_content(string: str) -> str:
@@ -25,7 +31,7 @@ def escape_content(string: str) -> str:
     return pattern.sub(_sub_match, string)
 
 
-async def maybe_await(func: Union[Callable[..., Any], Awaitable[Any]], *args, **kwargs) -> Any:
+async def maybe_await(func: Callable[..., Union[T, Awaitable[T]]], *args: Any, **kwargs: Any) -> T:
     """
     Await the given function if it is awaitable or call it synchronously.
 

@@ -1,9 +1,9 @@
 from random import choice
 
-from discord import TextChannel
+import discord
 
 from ..interface import Adapter
-from ..utils import escape_content
+from ..utils import DPY2, escape_content
 from ..verb import Verb
 
 __all__ = (
@@ -19,10 +19,11 @@ class AttributeAdapter(Adapter):
 
     def __init__(self, base):
         self.object = base
+        created_at = getattr(base, "created_at", None) or discord.utils.snowflake_time(base.id)
         self._attributes = {
             "id": base.id,
-            "created_at": base.created_at,
-            "timestamp": int(base.created_at.timestamp()),
+            "created_at": created_at,
+            "timestamp": int(created_at.timestamp()),
             "name": getattr(base, "name", str(base)),
         }
         self._methods = {}
@@ -107,18 +108,19 @@ class MemberAdapter(AttributeAdapter):
     """
 
     def update_attributes(self):
+        avatar_url = self.object.display_avatar.url if DPY2 else self.object.avatar_url
         joined_at = getattr(self.object, "joined_at", self.object.created_at)
         additional_attributes = {
             "color": self.object.color,
             "colour": self.object.color,
             "nick": self.object.display_name,
-            "avatar": (self.object.avatar_url, False),
+            "avatar": (avatar_url, False),
             "discriminator": self.object.discriminator,
             "joined_at": joined_at,
             "joinstamp": int(joined_at.timestamp()),
             "mention": self.object.mention,
             "bot": self.object.bot,
-            "top_role": getattr(self.object, "top_role", None),
+            "top_role": getattr(self.object, "top_role", ""),
         }
         if roleids := getattr(self.object, "_roles", None):
             additional_attributes["roleids"] = " ".join(str(r) for r in roleids)
@@ -156,11 +158,11 @@ class ChannelAdapter(AttributeAdapter):
     """
 
     def update_attributes(self):
-        if isinstance(self.object, TextChannel):
+        if isinstance(self.object, discord.TextChannel):
             additional_attributes = {
                 "nsfw": self.object.nsfw,
                 "mention": self.object.mention,
-                "topic": self.object.topic or None,
+                "topic": self.object.topic or "",
             }
             self._attributes.update(additional_attributes)
 
@@ -213,8 +215,9 @@ class GuildAdapter(AttributeAdapter):
             else:
                 humans += 1
         member_count = guild.member_count
+        icon_url = getattr(guild.icon, "url", "") if DPY2 else guild.icon_url
         additional_attributes = {
-            "icon": (guild.icon_url, False),
+            "icon": (icon_url, False),
             "member_count": member_count,
             "members": member_count,
             "bots": bots,
