@@ -9,7 +9,6 @@ from .exceptions import (
     StopError,
     TagScriptError,
     WorkloadExceededError,
-    BlockNameDuplicateError,
 )
 from .interface import Adapter, Block
 from .utils import maybe_await
