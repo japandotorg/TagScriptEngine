@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from discord.ext.commands import Cooldown
 
@@ -16,7 +16,6 @@ __all__ = (
     "BadColourArgument",
     "StopError",
     "CooldownExceeded",
-    "BlockNameDuplicateError",
 )
 
 
@@ -103,19 +102,4 @@ class CooldownExceeded(StopError):
         self.cooldown: Cooldown = cooldown
         self.key: str = key
         self.retry_after: float = retry_after
-        super().__init__(message)
-
-
-class BlockNameDuplicateError(TagScriptError):
-    """
-    Raised when a duplicate block name is passed to the interpreter.
-
-    Attributes
-    ----------
-    blockname: str
-        The block name that was duplicated.
-    """
-
-    def __init__(self, blockname: str, message: Optional[str]) -> None:
-        self.blockname: str = blockname
         super().__init__(message)

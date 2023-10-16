@@ -2,9 +2,15 @@ from __future__ import annotations
 
 import logging
 from itertools import islice
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, TypeAlias
 
-from .exceptions import ProcessError, StopError, TagScriptError, WorkloadExceededError
+from .exceptions import (
+    ProcessError,
+    StopError,
+    TagScriptError,
+    WorkloadExceededError,
+    BlockNameDuplicateError,
+)
 from .interface import Adapter, Block
 from .utils import maybe_await
 from .verb import Verb
@@ -18,9 +24,10 @@ __all__ = (
     "build_node_tree",
 )
 
-log = logging.getLogger(__name__)
+log: logging.Logger = logging.getLogger(__name__)
 
-AdapterDict = Dict[str, Adapter]
+AdapterDict: TypeAlias = Dict[str, Adapter]
+AnyDict: TypeAlias = Dict[str, Any]
 
 
 class Node:
@@ -39,15 +46,15 @@ class Node:
 
     __slots__ = ("output", "verb", "coordinates")
 
-    def __init__(self, coordinates: Tuple[int, int], verb: Optional[Verb] = None):
+    def __init__(self, coordinates: Tuple[int, int], verb: Optional[Verb] = None) -> None:
         self.output: Optional[str] = None
         self.verb = verb
         self.coordinates = coordinates
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.verb) + " at " + str(self.coordinates)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Node verb={self.verb!r} coordinates={self.coordinates!r} output={self.output!r}>"
 
 
@@ -96,13 +103,18 @@ class Response:
 
     __slots__ = ("body", "actions", "variables", "extra_kwargs")
 
-    def __init__(self, *, variables: AdapterDict = None, extra_kwargs: Dict[str, Any] = None):
-        self.body: str = None
-        self.actions: Dict[str, Any] = {}
+    def __init__(
+        self,
+        *,
+        variables: Optional[AdapterDict] = None,
+        extra_kwargs: Optional[AnyDict] = None,
+    ) -> None:
+        self.body: Optional[str] = None
+        self.actions: AnyDict = {}
         self.variables: AdapterDict = variables if variables is not None else {}
-        self.extra_kwargs: Dict[str, Any] = extra_kwargs if extra_kwargs is not None else {}
+        self.extra_kwargs: AnyDict = extra_kwargs if extra_kwargs is not None else {}
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"<Response body={self.body!r} actions={self.actions!r} variables={self.variables!r}>"
         )
@@ -125,13 +137,13 @@ class Context:
 
     __slots__ = ("verb", "original_message", "interpreter", "response")
 
-    def __init__(self, verb: Verb, res: Response, interpreter: Interpreter, og: str):
+    def __init__(self, verb: Verb, res: Response, interpreter: Interpreter, og: str) -> None:
         self.verb: Verb = verb
         self.original_message: str = og
         self.interpreter: Interpreter = interpreter
         self.response: Response = res
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Context verb={self.verb!r}>"
 
 
@@ -145,12 +157,12 @@ class Interpreter:
         A list of blocks to be used for TagScript processing.
     """
 
-    __slots__ = ("blocks",)
+    __slots__ = ("blocks", "_blocknames")
 
-    def __init__(self, blocks: List[Block]):
+    def __init__(self, blocks: List[Block]) -> None:
         self.blocks: List[Block] = blocks
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{type(self).__name__} blocks={self.blocks!r}>"
 
     def _get_context(
@@ -268,7 +280,7 @@ class Interpreter:
     def process(
         self,
         message: str,
-        seed_variables: AdapterDict = None,
+        seed_variables: Optional[AdapterDict] = None,
         *,
         charlimit: Optional[int] = None,
         dot_parameter: bool = False,
@@ -380,7 +392,7 @@ class AsyncInterpreter(Interpreter):
     async def process(
         self,
         message: str,
-        seed_variables: AdapterDict = None,
+        seed_variables: Optional[AdapterDict] = None,
         *,
         charlimit: Optional[int] = None,
         dot_parameter: bool = False,
