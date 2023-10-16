@@ -6,11 +6,11 @@ from ..verb import Verb
 class StringAdapter(Adapter):
     __slots__ = ("string", "escape_content")
 
-    def __init__(self, string: str, *, escape: bool = False):
+    def __init__(self, string: str, *, escape: bool = False) -> None:
         self.string: str = str(string)
         self.escape_content = escape
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{type(self).__qualname__} string={repr(self.string)}>"
 
     def get_value(self, ctx: Verb) -> str:
