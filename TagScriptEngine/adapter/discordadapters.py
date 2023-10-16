@@ -1,4 +1,5 @@
 from random import choice
+from typing import Union
 
 import discord
 
@@ -17,7 +18,7 @@ __all__ = (
 class AttributeAdapter(Adapter):
     __slots__ = ("object", "_attributes", "_methods")
 
-    def __init__(self, base):
+    def __init__(self, base: Union[discord.TextChannel, discord.Member, discord.Guild]) -> None:
         self.object = base
         created_at = getattr(base, "created_at", None) or discord.utils.snowflake_time(base.id)
         self._attributes = {
@@ -30,13 +31,13 @@ class AttributeAdapter(Adapter):
         self.update_attributes()
         self.update_methods()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{type(self).__qualname__} object={self.object!r}>"
 
-    def update_attributes(self):
+    def update_attributes(self) -> None:
         pass
 
-    def update_methods(self):
+    def update_methods(self) -> None:
         pass
 
     def get_value(self, ctx: Verb) -> str:
@@ -121,6 +122,9 @@ class MemberAdapter(AttributeAdapter):
             "mention": self.object.mention,
             "bot": self.object.bot,
             "top_role": getattr(self.object, "top_role", ""),
+            "boost": getattr(self.object, "premium_since", ""),
+            "timed_out": getattr(self.object, "timed_out_until", ""),
+            "banner": self.object.banner.url if self.object.banner else "",
         }
         if roleids := getattr(self.object, "_roles", None):
             additional_attributes["roleids"] = " ".join(str(r) for r in roleids)
@@ -163,6 +167,11 @@ class ChannelAdapter(AttributeAdapter):
                 "nsfw": self.object.nsfw,
                 "mention": self.object.mention,
                 "topic": self.object.topic or "",
+                "slowmode": self.object.slowmode_delay,
+                "category_id": self.object.category_id or "",
+                "default_auto_archive_duration": self.object.default_auto_archive_duration,
+                "id": self.object.id,
+                "name": self.object.name,
             }
             self._attributes.update(additional_attributes)
 
@@ -223,6 +232,8 @@ class GuildAdapter(AttributeAdapter):
             "bots": bots,
             "humans": humans,
             "description": guild.description or "No description.",
+            "vanity": self.object.vanity_url_code or "No Vanity URL.",
+            "owner_id": self.object.owner_id or "",
         }
         self._attributes.update(additional_attributes)
 
