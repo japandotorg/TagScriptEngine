@@ -106,9 +106,17 @@ class MemberAdapter(AttributeAdapter):
         The author's top role.
     roleids
         A list of the author's role IDs, split by spaces.
+    boost
+        If the user has boosted, this will be the UTC timestamp of when they did,
+        if not this will be empty.
+    timed_out
+        If the user is timed out, this will be the UTC timestamp of when they'll be untimed-out,
+        if not timed out this will be empty.
+    banner
+        The users banner url
     """
 
-    def update_attributes(self):
+    def update_attributes(self) -> None:
         avatar_url = self.object.display_avatar.url if DPY2 else self.object.avatar_url
         joined_at = getattr(self.object, "joined_at", self.object.created_at)
         additional_attributes = {
@@ -159,9 +167,12 @@ class ChannelAdapter(AttributeAdapter):
         A formatted text that pings the channel.
     topic
         The channel's topic.
+    category_id
+        The category the channel is associated with.
+        If no category channel, this will return empty.
     """
 
-    def update_attributes(self):
+    def update_attributes(self) -> None:
         if isinstance(self.object, discord.TextChannel):
             additional_attributes = {
                 "nsfw": self.object.nsfw,
@@ -169,9 +180,6 @@ class ChannelAdapter(AttributeAdapter):
                 "topic": self.object.topic or "",
                 "slowmode": self.object.slowmode_delay,
                 "category_id": self.object.category_id or "",
-                "default_auto_archive_duration": self.object.default_auto_archive_duration,
-                "id": self.object.id,
-                "name": self.object.name,
             }
             self._attributes.update(additional_attributes)
 
@@ -212,9 +220,13 @@ class GuildAdapter(AttributeAdapter):
         The server's description if one is set, or "No description".
     random
         A random member from the server.
+    vanity
+        If guild has a vanity, this returns the vanity else empty.
+    owner_id
+        The server owner's id.
     """
 
-    def update_attributes(self):
+    def update_attributes(self) -> None:
         guild = self.object
         bots = 0
         humans = 0
@@ -237,9 +249,9 @@ class GuildAdapter(AttributeAdapter):
         }
         self._attributes.update(additional_attributes)
 
-    def update_methods(self):
+    def update_methods(self) -> None:
         additional_methods = {"random": self.random_member}
         self._methods.update(additional_methods)
 
-    def random_member(self):
+    def random_member(self) -> discord.Member:
         return choice(self.object.members)
