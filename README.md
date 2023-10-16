@@ -11,7 +11,7 @@ This fork adds support for Discord object adapters and a couple Discord related 
 well as multiple utility blocks. Additionally, several tweaks have been made to the engine's
 behavior.
 
-This TagScriptEngine is used on [Noumenon, a Discord bot](https://discordapp.com/oauth2/authorize?client_id=634866217764651009&permissions=2080894207&scope=bot%20applications.commands).
+This TagScriptEngine is used on [MELON, a Discord bot](https://melonbot.io/invite).
 An example implementation can be found its [Tags cog](https://github.com/phenom4n4n/phen-cogs/tree/master/tags).
 
 Additional documentation on the TagScriptEngine library can be [found here](https://tagscript.readthedocs.io/en/latest/).
@@ -27,13 +27,13 @@ pip(3) install TagScript
 Download from a commit:
 
 ```
-pip(3) install git+https://github.com/phenom4n4n/TagScript.git@<COMMIT_HASH>
+pip(3) install git+https://github.com/japandotorg/TagScript.git@<COMMIT_HASH>
 ```
 
 Install for editing/development:
 
 ```
-git clone https://github.com/phenom4n4n/TagScript.git
+git clone https://github.com/japandotorg/TagScript.git
 pip(3) install -e ./TagScript
 ```
 
