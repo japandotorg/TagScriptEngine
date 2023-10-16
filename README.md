@@ -1,9 +1,9 @@
 ## Information
-<a href='https://tagscript.readthedocs.io/en/latest/?badge=latest'>
-    <img src='https://readthedocs.org/projects/tagscript/badge/?version=latest' alt='Documentation Status' />
+<a href='https://tagscriptengine.readthedocs.io/en/latest/?badge=latest'>
+    <img src='https://readthedocs.org/projects/tagscriptengine/badge/?version=latest' alt='Documentation Status' />
 </a>
-<a href='https://pypi.python.org/pypi/TagScript/'>
-    <img src='https://img.shields.io/pypi/v/TagScript' alt=' yPI' />
+<a href='https://pypi.python.org/pypi/AdvancedTagscriptEngine/'>
+    <img src='https://img.shields.io/pypi/v/AdvancedTagscriptEngine' alt=' yPI' />
 </a>
 
 This repository is a fork of JonSnowbd's [TagScript](https://github.com/JonSnowbd/TagScript), a string templating language.
