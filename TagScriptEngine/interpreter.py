@@ -161,7 +161,7 @@ class Interpreter:
 
     def __init__(self, blocks: List[Block]) -> None:
         self.blocks: List[Block] = blocks
-        self._blocknames = []
+        self._blocknames: List[str] = []
         for block in blocks:
             for name in block.ACCEPTED_NAMES:
                 if block in self._blocknames:
