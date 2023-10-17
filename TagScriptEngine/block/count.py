@@ -59,4 +59,4 @@ class LengthBlock(verb_required_block(True, payload=True)):
     ACCEPTED_NAMES = ("length", "len")
 
     def process(self, ctx: Context) -> Optional[str]:
-        return str(len(ctx.verb.parameter)) if ctx.verb.parameter else None
+        return str(len(ctx.verb.parameter)) if ctx.verb.parameter else "-1"
