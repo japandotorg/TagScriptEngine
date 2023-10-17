@@ -42,30 +42,22 @@ class LengthBlock(verb_required_block(True, payload=True)):
     based on what you passed in, w for word, s for spaces.
     If you provide an invalid parameter, the block will return -1.
 
-    **Usage:** ``{length(["w", "s"]):<text>}``
+    **Usage:** ``{length(<text>)}``
 
     **Aliases:** ``len``
 
-    **Payload:** ``text``
+    **Payload:** None
 
-    **Parameter:** ``"w", "s"``
+    **Parameter:** ``text``
 
     .. tagscript::
 
-        {length:TagScriptEngine}
+        {len("TagScriptEngine")}
         15
-
-        {len(w):Tag Script}
-        2
     """
 
     ACCEPTED_NAMES = ("length", "len")
 
     def process(self, ctx: Context) -> Optional[str]:
-        if ctx.verb.parameter:
-            if ctx.verb.parameter in ("w", "words", "word"):
-                return str(len(ctx.verb.payload.split(" ")))
-            if ctx.verb.parameter in ("s", "spaces", "space"):
-                return str(len(ctx.verb.payload.split(" ") - 1))
-            return "-1"
-        return len(ctx.verb.payload)
+        text = str(len(ctx.verb.parameter))
+        return text if text else "-1"
