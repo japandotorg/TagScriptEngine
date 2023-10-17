@@ -6,7 +6,7 @@ from .exceptions import *
 from .interface import *
 from .interpreter import *
 from .utils import *
-from .verb import Verb
+from .verb import Verb as Verb
 
 __version__ = "3.1.0"
 
