@@ -9,7 +9,6 @@ from .exceptions import (
     StopError,
     TagScriptError,
     WorkloadExceededError,
-    BlockNameDuplicateError,
 )
 from .interface import Adapter, Block
 from .utils import maybe_await
@@ -157,16 +156,10 @@ class Interpreter:
         A list of blocks to be used for TagScript processing.
     """
 
-    __slots__ = ("blocks", "_blocknames")
+    __slots__ = ("blocks",)
 
     def __init__(self, blocks: List[Block]) -> None:
         self.blocks: List[Block] = blocks
-        self._blocknames: List[str] = []
-        for block in blocks:
-            for name in block.ACCEPTED_NAMES:
-                if block in self._blocknames:
-                    raise BlockNameDuplicateError("Duplicate block name", block)
-                self._blocknames.append(name)
 
     def __repr__(self) -> str:
         return f"<{type(self).__name__} blocks={self.blocks!r}>"

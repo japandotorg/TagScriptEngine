@@ -16,7 +16,6 @@ __all__ = (
     "BadColourArgument",
     "StopError",
     "CooldownExceeded",
-    "BlockNameDuplicateError",
 )
 
 
@@ -103,21 +102,4 @@ class CooldownExceeded(StopError):
         self.cooldown: Cooldown = cooldown
         self.key: str = key
         self.retry_after: float = retry_after
-        super().__init__(message)
-
-
-class BlockNameDuplicateError(TagScriptError):
-    """
-    Raised when a duplicate block name is passed to the interpreter.
-
-    Attributes
-    ----------
-    message: str
-        The custom error message
-    blockname: str
-        The blockname that was duplicated.
-    """
-
-    def __init__(self, message: str, block_name: str) -> None:
-        self.block_name: str = block_name
         super().__init__(message)
