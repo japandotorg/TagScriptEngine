@@ -14,10 +14,10 @@ class UpperBlock(Block):
 
     **Examples:**  ::
 
-        The text is {lower(ThIs Is A TeXt)}!
+        The text is {upper(ThIs Is A TeXt)}!
         # The text is THIS IS A TEXT!
 
-        You have entered {lower({args})}!
+        You have entered {upper({args})}!
         # You have entered HELLO WORLD!
     """
 
