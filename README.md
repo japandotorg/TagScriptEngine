@@ -21,7 +21,7 @@ Additional documentation on the TagScriptEngine library can be [found here](http
 Download the latest version through pip:
 
 ```
-pip(3) install AdvancedTagscriptEngine
+pip(3) install AdvancedTagScriptEngine
 ```
 
 Download from a commit:
