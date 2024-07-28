@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 import random
-from typing import Optional, Tuple, Type, cast
+from typing import Optional, Tuple
 
 from ..interface import verb_required_block
-from ..interpreter import Context, Block
+from ..interpreter import Context
 
 
 __all__: Tuple[str, ...] = ("FiftyFiftyBlock",)
 
 
-class FiftyFiftyBlock(cast(Type[Block], verb_required_block(True, payload=True))):
+class FiftyFiftyBlock(verb_required_block(True, payload=True)):  # type: ignore
     """
     The fifty-fifty block has a 50% change of returning the payload, and 50% chance of returning null.
 

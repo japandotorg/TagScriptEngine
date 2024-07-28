@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from typing import Optional, Tuple, Type, cast
+from typing import Optional, Tuple, cast
 
-from ..interface import verb_required_block, Block
+from ..interface import verb_required_block
 from ..interpreter import Context
 
 
 __all__: Tuple[str, ...] = ("RequireBlock", "BlacklistBlock")
 
 
-class RequireBlock(cast(Type[Block], verb_required_block(True, parameter=True))):
+class RequireBlock(verb_required_block(True, parameter=True)):  # type: ignore
     """
     The require block will attempt to convert the given parameter into a channel
     or role, using name or ID. If the user running the tag is not in the targeted
@@ -45,7 +45,7 @@ class RequireBlock(cast(Type[Block], verb_required_block(True, parameter=True)))
         return ""
 
 
-class BlacklistBlock(cast(Type[Block], verb_required_block(True, parameter=True))):
+class BlacklistBlock(verb_required_block(True, parameter=True)):  # type: ignore
     """
     The blacklist block will attempt to convert the given parameter into a channel
     or role, using name or ID. If the user running the tag is in the targeted

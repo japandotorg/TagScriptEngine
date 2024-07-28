@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 import random
-from typing import Optional, Tuple, Type, cast
+from typing import Optional, Tuple, cast
 
-from ..interface import verb_required_block, Block
+from ..interface import verb_required_block
 from ..interpreter import Context
 
 
 __all__: Tuple[str, ...] = ("RandomBlock",)
 
 
-class RandomBlock(cast(Type[Block], verb_required_block(True, payload=True))):
+class RandomBlock(verb_required_block(True, payload=True)):  # type: ignore
     """
     Pick a random item from a list of strings, split by either ``~``
     or ``,``. An optional seed can be provided to the parameter to

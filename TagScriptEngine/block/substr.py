@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from typing import Optional, Tuple, Type, cast
+from typing import Optional, Tuple, cast
 
-from ..interface import verb_required_block, Block
+from ..interface import verb_required_block
 from ..interpreter import Context
 
 
 __all__: Tuple[str, ...] = ("SubstringBlock",)
 
 
-class SubstringBlock(cast(Type[Block], verb_required_block(True, parameter=True))):
+class SubstringBlock(verb_required_block(True, parameter=True)):  # type: ignore
     ACCEPTED_NAMES: Tuple[str, ...] = ("substr", "substring")
 
     def process(self, ctx: Context) -> Optional[str]:

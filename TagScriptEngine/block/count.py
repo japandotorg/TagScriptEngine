@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from typing import Optional, Tuple, Type, cast
+from typing import Optional, Tuple, cast
 
 from ..interface import verb_required_block
-from ..interpreter import Context, Block
+from ..interpreter import Context
 
 
 __all__: Tuple[str, ...] = ("CountBlock", "LengthBlock")
 
 
-class CountBlock(cast(Type[Block], verb_required_block(True, payload=True))):
+class CountBlock(verb_required_block(True, payload=True)):  # type: ignore
     """
     The count block will count how much of text is in message.
     This is case sensitive and will include substrings, if you
@@ -41,7 +41,7 @@ class CountBlock(cast(Type[Block], verb_required_block(True, payload=True))):
         return str(len(cast(str, ctx.verb.payload)) + 1)
 
 
-class LengthBlock(cast(Type[Block], verb_required_block(True, payload=True))):
+class LengthBlock(verb_required_block(True, payload=True)):  # type: ignore
     """
     The length block will check the length of the given String.
     If a parameter is passed in, the block will check the length

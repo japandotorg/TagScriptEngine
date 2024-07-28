@@ -1,19 +1,19 @@
 from __future__ import annotations
 
 import time
-from typing import Any, Dict, List, Optional, Tuple, Type, cast
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 from discord.ext.commands import Cooldown, CooldownMapping
 
 from ..exceptions import CooldownExceeded
 from ..interface import verb_required_block
-from ..interpreter import Context, Block
+from ..interpreter import Context
 from .helpers import helper_split
 
 __all__: Tuple[str, ...] = ("CooldownBlock",)
 
 
-class CooldownBlock(cast(Type[Block], verb_required_block(True, payload=True, parameter=True))):
+class CooldownBlock(verb_required_block(True, payload=True, parameter=True)):  # type: ignore
     """
     The cooldown block implements cooldowns when running a tag.
     The parameter requires 2 values to be passed: ``rate`` and ``per`` integers.

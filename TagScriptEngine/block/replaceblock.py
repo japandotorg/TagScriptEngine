@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from typing import Optional, Tuple, Type, cast
+from typing import Optional, Tuple, cast
 
-from ..interface import verb_required_block, Block
+from ..interface import verb_required_block
 from ..interpreter import Context
 
 
 __all__: Tuple[str, ...] = ("ReplaceBlock", "PythonBlock")
 
 
-class ReplaceBlock(cast(Type[Block], verb_required_block(True, payload=True, parameter=True))):
+class ReplaceBlock(verb_required_block(True, payload=True, parameter=True)):  # type: ignore
     """
     The replace block will replace specific characters in a string.
     The parameter should split by a ``,``, containing the characters to find
@@ -47,7 +47,7 @@ class ReplaceBlock(cast(Type[Block], verb_required_block(True, payload=True, par
         return cast(str, ctx.verb.payload).replace(before, after)
 
 
-class PythonBlock(cast(Type[Block], verb_required_block(True, payload=True, parameter=True))):
+class PythonBlock(verb_required_block(True, payload=True, parameter=True)):  # type: ignore
     """
     The in block serves three different purposes depending on the alias that is used.
 

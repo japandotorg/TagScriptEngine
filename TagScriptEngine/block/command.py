@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from types import TracebackType
-from typing import Any, Awaitable, Generator, Iterator, List, Optional, Tuple, Type, TypeVar, cast
+from typing import Any, Awaitable, Generator, Iterator, List, Optional, Tuple, Type, TypeVar
 
 from ..interface import Block, verb_required_block
 from ..interpreter import Context
@@ -13,7 +13,7 @@ T = TypeVar("T")
 __all__: Tuple[str, ...] = ("CommandBlock", "OverrideBlock", "SequentialGather")
 
 
-class CommandBlock(cast(Type[Block], verb_required_block(True, payload=True))):
+class CommandBlock(verb_required_block(True, payload=True)):  # type: ignore
     """
     Run a command as if the tag invoker had ran it. Only 3 command
     blocks can be used in a tag.

@@ -1,14 +1,14 @@
-from typing import Tuple, Type, cast
+from typing import Tuple, cast
 from urllib.parse import quote, quote_plus
 
-from ..interface import verb_required_block, Block
+from ..interface import verb_required_block
 from ..interpreter import Context
 
 
 __all__: Tuple[str, ...] = ("URLEncodeBlock",)
 
 
-class URLEncodeBlock(cast(Type[Block], verb_required_block(True, payload=True))):
+class URLEncodeBlock(verb_required_block(True, payload=True)):  # type: ignore
     """
     This block will encode a given string into a properly formatted url
     with non-url compliant characters replaced. Using ``+`` as the parameter

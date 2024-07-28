@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional, Tuple, Type, cast
+from typing import Optional, Tuple, cast
 
 from ..interface import verb_required_block, Block
 from ..interpreter import Context
@@ -31,7 +31,7 @@ def parse_into_output(payload: str, result: Optional[bool]) -> Optional[str]:
 ImplicitPPRBlock: Block = verb_required_block(True, payload=True, parameter=True)
 
 
-class AnyBlock(cast(Type[Block], ImplicitPPRBlock)):
+class AnyBlock(ImplicitPPRBlock):  # type: ignore
     """
     The any block checks that any of the passed expressions are true.
     Multiple expressions can be passed to the parameter by splitting them with ``|``.
@@ -64,7 +64,7 @@ class AnyBlock(cast(Type[Block], ImplicitPPRBlock)):
         return parse_into_output(cast(str, ctx.verb.payload), result)
 
 
-class AllBlock(cast(Type[Block], ImplicitPPRBlock)):
+class AllBlock(ImplicitPPRBlock):  # type: ignore
     """
     The all block checks that all of the passed expressions are true.
     Multiple expressions can be passed to the parameter by splitting them with ``|``.
@@ -97,7 +97,7 @@ class AllBlock(cast(Type[Block], ImplicitPPRBlock)):
         return parse_into_output(cast(str, ctx.verb.payload), result)
 
 
-class IfBlock(cast(Type[Block], ImplicitPPRBlock)):
+class IfBlock(ImplicitPPRBlock):  # type: ignore
     """
     The if block returns a message based on the passed expression to the parameter.
     An expression is represented by two values compared with an operator.

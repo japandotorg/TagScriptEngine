@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 import random
-from typing import Optional, Tuple, Type, cast
+from typing import Optional, Tuple, cast
 
-from ..interface import verb_required_block, Block
+from ..interface import verb_required_block
 from ..interpreter import Context
 
 
 __all__: Tuple[str, ...] = ("RangeBlock",)
 
 
-class RangeBlock(cast(Type[Block], verb_required_block(True, payload=True))):
+class RangeBlock(verb_required_block(True, payload=True)):  # type: ignore
     """
     The range block picks a random number from a range of numbers seperated by ``-``.
     The number range is inclusive, so it can pick the starting/ending number as well.

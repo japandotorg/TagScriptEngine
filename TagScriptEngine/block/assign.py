@@ -1,17 +1,16 @@
 from __future__ import annotations
 
-from typing import Optional, Tuple, Type, cast
+from typing import Optional, Tuple
 
 from ..adapter import StringAdapter
 from ..interface import verb_required_block
 from ..interpreter import Context
-from ..interface.block import Block
 
 
 __all__: Tuple[str, ...] = ("AssignmentBlock",)
 
 
-class AssignmentBlock(cast(Type[Block], verb_required_block(False, parameter=True))):
+class AssignmentBlock(verb_required_block(False, parameter=True)):  # type: ignore
     """
     Variables are useful for choosing a value and referencing it later in a tag.
     Variables can be referenced using brackets as any other block.

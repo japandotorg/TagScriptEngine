@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from typing import Optional, Tuple, Type, cast
+from typing import Optional, Tuple, cast
 
-from ..interface import verb_required_block, Block
+from ..interface import verb_required_block
 from ..interpreter import Context
 
 
 __all__: Tuple[str, ...] = ("RedirectBlock",)
 
 
-class RedirectBlock(cast(Type[Block], verb_required_block(True, parameter=True))):
+class RedirectBlock(verb_required_block(True, parameter=True)):  # type: ignore
     """
     Redirects the tag response to either the given channel, the author's DMs,
     or uses a reply based on what is passed to the parameter.

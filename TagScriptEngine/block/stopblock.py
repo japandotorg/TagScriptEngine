@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import Optional, Tuple, Type, cast
+from typing import Optional, Tuple, cast
 
 from ..exceptions import StopError
-from ..interface import verb_required_block, Block
+from ..interface import verb_required_block
 from ..interpreter import Context
 from . import helper_parse_if
 
@@ -11,7 +11,7 @@ from . import helper_parse_if
 __all__: Tuple[str, ...] = ("StopBlock",)
 
 
-class StopBlock(cast(Type[Block], verb_required_block(True, parameter=True))):
+class StopBlock(verb_required_block(True, parameter=True)):  # type: ignore
     """
     The stop block stops tag processing if the given parameter is true.
     If a message is passed to the payload it will return that message.
