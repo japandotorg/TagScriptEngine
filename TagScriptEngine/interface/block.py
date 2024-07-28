@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import TYPE_CHECKING, Any, Optional, Protocol, Tuple, cast
+from typing import TYPE_CHECKING, Any, Optional, Protocol, Tuple, Type, cast
 
 if TYPE_CHECKING:
     from ..interpreter import Context
@@ -96,7 +96,7 @@ def verb_required_block(
     *,
     parameter: bool = False,
     payload: bool = False,
-) -> Block:
+) -> Type[Block]:
     """
     Get a Block subclass that requires a verb to implicitly or explicitly have a parameter or payload passed.
 
@@ -111,12 +111,8 @@ def verb_required_block(
         Passing True will cause the block to require the payload to be passed.
     """
     check = (lambda x: x) if implicit else (lambda x: x is not None)
-
-    class RequireMeta(type):
-        def __repr__(self):
-            return f"VerbRequiredBlock(implicit={implicit!r}, payload={payload!r}, parameter={parameter!r})"
-
-    class VerbRequiredBlock(Block, metaclass=RequireMeta):
+    
+    class VerbRequiredBlock(Block):
         @classmethod
         def will_accept(cls, ctx: Context) -> bool:
             verb = ctx.verb
@@ -125,5 +121,4 @@ def verb_required_block(
             if parameter and not check(verb.parameter):
                 return False
             return super().will_accept(ctx)
-
-    return VerbRequiredBlock  # type: ignore
+    return VerbRequiredBlock
