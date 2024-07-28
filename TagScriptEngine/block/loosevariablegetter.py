@@ -1,7 +1,12 @@
-from typing import Optional
+from __future__ import annotations
+
+from typing import Optional, Tuple
 
 from ..interface import Block
 from ..interpreter import Context
+
+
+__all__: Tuple[str, ...] = ("LooseVariableGetterBlock",)
 
 
 class LooseVariableGetterBlock(Block):
@@ -25,7 +30,7 @@ class LooseVariableGetterBlock(Block):
         # This is my variable.
     """
 
-    def will_accept(self, ctx: Context) -> bool:
+    def will_accept(self, ctx: Context) -> bool:  # type: ignore
         return True
 
     def process(self, ctx: Context) -> Optional[str]:

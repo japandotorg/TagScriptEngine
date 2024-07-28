@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import logging
 from itertools import islice
-from typing import Any, Dict, List, Optional, Tuple, TypeAlias
+from typing import Any, Dict, List, Optional, Protocol, Tuple, cast
+from typing_extensions import TypeAlias
 
 from .exceptions import (
     ProcessError,
@@ -14,7 +15,7 @@ from .interface import Adapter, Block
 from .utils import maybe_await
 from .verb import Verb
 
-__all__ = (
+__all__: Tuple[str, ...] = (
     "Interpreter",
     "AsyncInterpreter",
     "Context",
@@ -29,7 +30,15 @@ AdapterDict: TypeAlias = Dict[str, Adapter]
 AnyDict: TypeAlias = Dict[str, Any]
 
 
-class Node:
+class _Node(Protocol):
+    def __init__(self, coordinates: Tuple[int, int], verb: Optional[Verb] = None) -> None: ...
+
+    def __str__(self) -> str: ...
+
+    def __repr__(self) -> str: ...
+
+
+class Node(_Node):
     """
     A low-level object representing a bracketed block.
 
@@ -43,12 +52,12 @@ class Node:
         The `Block` processed output for this node.
     """
 
-    __slots__ = ("output", "verb", "coordinates")
+    __slots__: Tuple[str, ...] = ("output", "verb", "coordinates")
 
     def __init__(self, coordinates: Tuple[int, int], verb: Optional[Verb] = None) -> None:
         self.output: Optional[str] = None
-        self.verb = verb
-        self.coordinates = coordinates
+        self.verb: Optional[Verb] = verb
+        self.coordinates: Tuple[int, int] = coordinates
 
     def __str__(self) -> str:
         return str(self.verb) + " at " + str(self.coordinates)
@@ -66,25 +75,34 @@ def build_node_tree(message: str) -> List[Node]:
     List[Node]
         A list of all possible text bracket blocks.
     """
-    nodes = []
-    previous = r""
-
-    starts = []
-    for i, ch in enumerate(message):
-        if ch == "{" and previous != r"\\":
-            starts.append(i)
-        if ch == "}" and previous != r"\\":
+    nodes: List[Node] = []
+    previous: str = r""
+    starts: List[int] = []
+    for idx, char in enumerate(message):
+        if char == "{" and previous != r"\\":
+            starts.append(idx)
+        if char == "}" and previous != r"\\":
             if not starts:
                 continue
-            coords = (starts.pop(), i)
-            n = Node(coords)
-            nodes.append(n)
-
-        previous = ch
+            coords: Tuple[int, int] = (starts.pop(), idx)
+            node: Node = Node(coords)
+            nodes.append(node)
+        previous: str = char
     return nodes
 
 
-class Response:
+class _Response(Protocol):
+    def __init__(
+        self,
+        *,
+        variables: Optional[AdapterDict] = None,
+        extra_kwargs: Optional[AnyDict] = None,
+    ) -> None: ...
+
+    def __repr__(self) -> str: ...
+
+
+class Response(_Response):
     """
     An object containing information on a completed TagScript process.
 
@@ -100,7 +118,7 @@ class Response:
         A dictionary of extra keyword arguments that blocks can use to define their own behavior.
     """
 
-    __slots__ = ("body", "actions", "variables", "extra_kwargs")
+    __slots__: Tuple[str, ...] = ("body", "actions", "variables", "extra_kwargs")
 
     def __init__(
         self,
@@ -119,7 +137,13 @@ class Response:
         )
 
 
-class Context:
+class _Context(Protocol):
+    def __init__(self, verb: Verb, res: Response, interpreter: Interpreter, og: str) -> None: ...
+
+    def __repr__(self) -> str: ...
+
+
+class Context(_Context):
     """
     An object containing data on the TagScript block processed by the interpreter.
     This class is passed to adapters and blocks during processing.
@@ -134,7 +158,7 @@ class Context:
         The interpreter processing the TagScript.
     """
 
-    __slots__ = ("verb", "original_message", "interpreter", "response")
+    __slots__: Tuple[str, ...] = ("verb", "original_message", "interpreter", "response")
 
     def __init__(self, verb: Verb, res: Response, interpreter: Interpreter, og: str) -> None:
         self.verb: Verb = verb
@@ -146,7 +170,63 @@ class Context:
         return f"<Context verb={self.verb!r}>"
 
 
-class Interpreter:
+class _Interpreter(Protocol):
+    def __init__(self, blocks: List[Block]) -> None: ...
+
+    def __repr__(self) -> str: ...
+
+    def _get_context(
+        self,
+        node: Node,
+        final: str,
+        *,
+        response: Response,
+        original_message: str,
+        verb_limit: int,
+        dot_parameter: bool,
+    ) -> Context: ...
+
+    def _get_acceptors(self, ctx: Context) -> List[Block]: ...
+
+    def _process_blocks(self, ctx: Context, node: Node) -> Optional[str]: ...
+
+    @staticmethod
+    def _check_workload(charlimit: int, total_work: int, output: str) -> Optional[int]: ...
+
+    @staticmethod
+    def _text_deform(start: int, end: int, final: str, output: str) -> Tuple[str, int]: ...
+
+    @staticmethod
+    def _translate_nodes(
+        node_ordered_list: List[Node], index: int, start: int, differential: int
+    ) -> None: ...
+
+    def _solve(
+        self,
+        message: str,
+        node_ordered_list: List[Node],
+        response: Response,
+        *,
+        charlimit: int,
+        verb_limit: int = 2000,
+        dot_parameter: bool,
+    ) -> str: ...
+
+    @staticmethod
+    def _return_response(response: Response, output: str) -> Response: ...
+
+    def process(
+        self,
+        message: str,
+        seed_variables: Optional[AdapterDict] = None,
+        *,
+        charlimit: Optional[int] = None,
+        dot_parameter: bool = False,
+        **kwargs: Any,
+    ) -> Response: ...
+
+
+class Interpreter(_Interpreter):
     """
     The TagScript interpreter.
 
@@ -216,7 +296,9 @@ class Interpreter:
         return final, differential
 
     @staticmethod
-    def _translate_nodes(node_ordered_list: List[Node], index: int, start: int, differential: int):
+    def _translate_nodes(
+        node_ordered_list: List[Node], index: int, start: int, differential: int
+    ) -> None:
         for future_n in islice(node_ordered_list, index + 1, None):
             new_start = None
             new_end = None
@@ -240,7 +322,7 @@ class Interpreter:
         charlimit: int,
         verb_limit: int = 2000,
         dot_parameter: bool,
-    ):
+    ) -> str:
         final = message
         total_work = 0
         for index, node in enumerate(node_ordered_list):
@@ -262,7 +344,7 @@ class Interpreter:
             if output is None:
                 continue  # If there was no value output, no need to text deform.
 
-            total_work = self._check_workload(charlimit, total_work, output)
+            total_work = self._check_workload(charlimit, cast(int, total_work), output)
             final, differential = self._text_deform(start, end, final, output)
             self._translate_nodes(node_ordered_list, index, start, differential)
         return final
@@ -283,7 +365,7 @@ class Interpreter:
         *,
         charlimit: Optional[int] = None,
         dot_parameter: bool = False,
-        **kwargs,
+        **kwargs: Any,
     ) -> Response:
         """
         Processes a given TagScript string.
@@ -322,7 +404,7 @@ class Interpreter:
                 message,
                 node_ordered_list,
                 response,
-                charlimit=charlimit,
+                charlimit=cast(int, charlimit),
                 dot_parameter=dot_parameter,
             )
         except TagScriptError:
@@ -341,10 +423,10 @@ class AsyncInterpreter(Interpreter):
     See `Interpreter` for full documentation.
     """
 
-    async def _get_acceptors(self, ctx: Context) -> List[Block]:
+    async def _get_acceptors(self, ctx: Context) -> List[Block]:  # type: ignore
         return [b for b in self.blocks if await maybe_await(b.will_accept, ctx)]
 
-    async def _process_blocks(self, ctx: Context, node: Node) -> Optional[str]:
+    async def _process_blocks(self, ctx: Context, node: Node) -> Optional[str]:  # type: ignore
         acceptors = await self._get_acceptors(ctx)
         for b in acceptors:
             value = await maybe_await(b.process, ctx)
@@ -353,7 +435,7 @@ class AsyncInterpreter(Interpreter):
                 node.output = value
                 return value
 
-    async def _solve(
+    async def _solve(  # type: ignore
         self,
         message: str,
         node_ordered_list: List[Node],
@@ -362,7 +444,7 @@ class AsyncInterpreter(Interpreter):
         charlimit: int,
         verb_limit: int = 2000,
         dot_parameter: bool,
-    ):
+    ) -> str:
         final = message
         total_work = 0
 
@@ -383,19 +465,19 @@ class AsyncInterpreter(Interpreter):
             if output is None:
                 continue  # If there was no value output, no need to text deform.
 
-            total_work = self._check_workload(charlimit, total_work, output)
+            total_work = self._check_workload(charlimit, cast(int, total_work), output)
             final, differential = self._text_deform(start, end, final, output)
             self._translate_nodes(node_ordered_list, index, start, differential)
         return final
 
-    async def process(
+    async def process(  # type: ignore
         self,
         message: str,
         seed_variables: Optional[AdapterDict] = None,
         *,
         charlimit: Optional[int] = None,
         dot_parameter: bool = False,
-        **kwargs,
+        **kwargs: Any,
     ) -> Response:
         """
         Asynchronously process a given TagScript string.
@@ -410,7 +492,7 @@ class AsyncInterpreter(Interpreter):
                 message,
                 node_ordered_list,
                 response,
-                charlimit=charlimit,
+                charlimit=cast(int, charlimit),
                 dot_parameter=dot_parameter,
             )
         except TagScriptError:

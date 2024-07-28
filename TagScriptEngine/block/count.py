@@ -1,10 +1,15 @@
-from typing import Optional
+from __future__ import annotations
+
+from typing import Optional, Tuple, cast
 
 from ..interface import verb_required_block
 from ..interpreter import Context
 
 
-class CountBlock(verb_required_block(True, payload=True)):
+__all__: Tuple[str, ...] = ("CountBlock", "LengthBlock")
+
+
+class CountBlock(verb_required_block(True, payload=True)):  # type: ignore
     """
     The count block will count how much of text is in message.
     This is case sensitive and will include substrings, if you
@@ -27,15 +32,16 @@ class CountBlock(verb_required_block(True, payload=True)):
         # 2
     """
 
-    ACCEPTED_NAMES = ("count",)
+    ACCEPTED_NAMES: Tuple[str, ...] = ("count",)
 
     def process(self, ctx: Context) -> Optional[str]:
         if ctx.verb.parameter:
-            return ctx.verb.payload.count(ctx.verb.parameter)
-        return len(ctx.verb.payload) + 1
+            payload: str = cast(str, ctx.verb.payload)
+            return str(payload.count(ctx.verb.parameter))
+        return str(len(cast(str, ctx.verb.payload)) + 1)
 
 
-class LengthBlock(verb_required_block(True, payload=True)):
+class LengthBlock(verb_required_block(True, payload=True)):  # type: ignore
     """
     The length block will check the length of the given String.
     If a parameter is passed in, the block will check the length
@@ -56,7 +62,7 @@ class LengthBlock(verb_required_block(True, payload=True)):
         15
     """
 
-    ACCEPTED_NAMES = ("length", "len")
+    ACCEPTED_NAMES: Tuple[str, ...] = ("length", "len")
 
     def process(self, ctx: Context) -> Optional[str]:
         return str(len(ctx.verb.parameter)) if ctx.verb.parameter else "-1"

@@ -1,13 +1,32 @@
+from __future__ import annotations
+
 import json
 from inspect import ismethod
-from typing import Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 from discord import Colour, Embed
 
-from ..exceptions import BadColourArgument, EmbedParseError
 from ..interface import Block
 from ..interpreter import Context
-from .helpers import helper_split, implicit_bool
+from .helpers import helper_split, easier_helper_split, implicit_bool
+from ..exceptions import BadColourArgument, EmbedParseError
+from .._warnings import removal
+
+try:
+    import orjson  # noqa: F401
+except ModuleNotFoundError:
+    _has_orjson: bool = False
+else:
+    _has_orjson: bool = True
+
+
+__all__: Tuple[str, ...] = ("EmbedBlock",)
+
+
+if _has_orjson:
+    _from_json = orjson.loads  # type: ignore
+else:
+    _from_json = json.loads
 
 
 def string_to_color(argument: str) -> Colour:
@@ -28,18 +47,18 @@ def string_to_color(argument: str) -> Colour:
         return method()
 
 
-def set_color(embed: Embed, attribute: str, value: str):
-    value = string_to_color(value)
+def set_color(embed: Embed, attribute: str, value: str) -> None:
+    value = string_to_color(value)  # type: ignore
     setattr(embed, attribute, value)
 
 
-def set_dynamic_url(embed: Embed, attribute: str, value: str):
+def set_dynamic_url(embed: Embed, attribute: str, value: str) -> None:
     method = getattr(embed, f"set_{attribute}")
     method(url=value)
 
 
-def add_field(embed: Embed, _: str, payload: str):
-    if (data := helper_split(payload, 3)) is None:
+def add_field(embed: Embed, _: str, payload: str) -> None:
+    if (data := easier_helper_split(payload, maxsplit=3)) is None:  # type: ignore
         raise EmbedParseError("`add_field` payload was not split by |")
     try:
         name, value, _inline = data
@@ -49,13 +68,13 @@ def add_field(embed: Embed, _: str, payload: str):
                 "`inline` argument for `add_field` is not a boolean value (_inline)"
             )
     except ValueError:
-        name, value = helper_split(payload, 2)
+        name, value = cast(List[str], helper_split(payload, 2))  # type: ignore
         inline = False
     embed.add_field(name=name, value=value, inline=inline)
 
 
-def set_footer(embed: Embed, _: str, payload: str):
-    data = helper_split(payload, 2)
+def set_footer(embed: Embed, _: str, payload: str) -> None:
+    data = easier_helper_split(payload, maxsplit=2)  # type: ignore
     if data is None:
         embed.set_footer(text=payload)
     else:
@@ -104,10 +123,10 @@ class EmbedBlock(Block):
     *   ``footer``
     *   ``field`` - (See below)
 
-    Adding a field to an embed requires the payload to be split by ``|``, into
-    either 2 or 3 parts. The first part is the name of the field, the second is
-    the text of the field, and the third optionally specifies whether the field
-    should be inline.
+    Adding a field to an embed requires the payload to be split by ``|``,
+    ``;`` or ``,`` into either 2 or 3 parts. The first part is the name
+    of the field, the  second is the text of the field, and the third
+    optionally specifies  whether the field should be inline.
 
     **Usage:** ``{embed(<attribute>):<value>}``
 
@@ -129,13 +148,21 @@ class EmbedBlock(Block):
 
     ::
 
-        {embed({{"fields":[{"name":"Field 1","value":"field description","inline":false}]})}
         {embed(title):my embed title}
+        {embed({{
+            "fields": [
+                {
+                    "name": "Field 1",
+                    "value": "field description",
+                    "inline": false
+                }
+            ]
+        })}
     """
 
-    ACCEPTED_NAMES = ("embed",)
+    ACCEPTED_NAMES: Tuple[str, ...] = ("embed",)
 
-    ATTRIBUTE_HANDLERS = {
+    ATTRIBUTE_HANDLERS: Dict[str, Any] = {
         "description": setattr,
         "title": setattr,
         "color": set_color,
@@ -147,6 +174,20 @@ class EmbedBlock(Block):
         "footer": set_footer,
     }
 
+    @removal(
+        name="EmbedBlock",
+        reason=(
+            "One of EmbedBlock's trait is scheduled to be removed in the next minor release, "
+            "A minor exception handling which would restrict the embed from getting sent and "
+            "would raise TagScriptEngine.exceptions.EmbedParseError incase it had more than "
+            "6000 characters, to know more about the limitations of discord embeds refer to the "
+            "[Official Discord API Docs](https://discord.com/developers/docs/resources/channel#embed-object-embed-limits)."
+        ),
+        version="3.2.0",
+    )
+    def __init__(self) -> None:
+        super().__init__()
+
     @staticmethod
     def get_embed(ctx: Context) -> Embed:
         return ctx.response.actions.get("embed", Embed())
@@ -154,7 +195,7 @@ class EmbedBlock(Block):
     @staticmethod
     def value_to_color(value: Optional[Union[int, str]]) -> Colour:
         if value is None or isinstance(value, Colour):
-            return value
+            return value  # type: ignore
         if isinstance(value, int):
             return Colour(value)
         elif isinstance(value, str):
@@ -164,8 +205,8 @@ class EmbedBlock(Block):
 
     def text_to_embed(self, text: str) -> Embed:
         try:
-            data = json.loads(text)
-        except json.decoder.JSONDecodeError as error:
+            data = _from_json(text)
+        except (json.decoder.JSONDecodeError, ValueError) as error:
             raise EmbedParseError(error) from error
 
         if data.get("embed"):

@@ -1,8 +1,13 @@
-from typing import Optional
+from __future__ import annotations
+
+from typing import Optional, Tuple, cast
 
 from ..interface import Block
 from ..interpreter import Context
 from . import helper_parse_if
+
+
+__all__: Tuple[str, ...] = ("BreakBlock",)
 
 
 class BreakBlock(Block):
@@ -28,9 +33,9 @@ class BreakBlock(Block):
         {break({args}==):You did not provide any input.}
     """
 
-    ACCEPTED_NAMES = ("break", "shortcircuit", "short")
+    ACCEPTED_NAMES: Tuple[str, ...] = ("break", "shortcircuit", "short")
 
     def process(self, ctx: Context) -> Optional[str]:
-        if helper_parse_if(ctx.verb.parameter):
-            ctx.response.body = ctx.verb.payload if ctx.verb.payload != None else ""
+        if helper_parse_if(cast(str, ctx.verb.parameter)):
+            ctx.response.body = ctx.verb.payload if ctx.verb.payload != None else ""  # noqa: E711
         return ""

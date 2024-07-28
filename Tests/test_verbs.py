@@ -26,7 +26,7 @@ class TestVerbFunctionality(unittest.TestCase):
         unique_outcomes = set(outcomes)
         seen_outcomes = set()
         for _ in range(tries):
-            outcome = self.engine.process(string).body
+            outcome = self.engine.process(string).body  # type: ignore
             seen_outcomes.add(outcome)
 
         result = unique_outcomes == seen_outcomes
@@ -82,15 +82,15 @@ class TestVerbFunctionality(unittest.TestCase):
         self.assertTrue(self.seen_all(test, expect))
         # Test simple float range
         test = "{rangef:1.5-2.5} cows"
-        self.assertTrue("." in self.engine.process(test).body)
+        self.assertTrue("." in self.engine.process(test).body)  # type: ignore
 
     def test_math(self):
         test = "{math:100/2}"
         expect = "50.0"  # division implies float
-        self.assertEqual(self.engine.process(test).body, expect)
+        self.assertEqual(self.engine.process(test).body, expect)  # type: ignore
 
         test = "{math:100**100**100}"  # should 'fail'
-        self.assertEqual(self.engine.process(test).body, test)
+        self.assertEqual(self.engine.process(test).body, test)  # type: ignore
 
     def test_misc(self):
         # Test using a variable to get a variable
@@ -99,19 +99,19 @@ class TestVerbFunctionality(unittest.TestCase):
             "message": adapter.StringAdapter("Hello"),
         }
         test = "{{pointer}}"
-        self.assertEqual(self.engine.process(test, data).body, "Hello")
+        self.assertEqual(self.engine.process(test, data).body, "Hello")  # type: ignore
 
         test = r"\{{pointer}\}"
-        self.assertEqual(self.engine.process(test, data).body, r"\{message\}")
+        self.assertEqual(self.engine.process(test, data).body, r"\{message\}")  # type: ignore
 
         test = "{break(10==10):Override.} This is my actual tag!"
-        self.assertEqual(self.engine.process(test, data).body, "Override.")
+        self.assertEqual(self.engine.process(test, data).body, "Override.")  # type: ignore
 
     def test_cuddled_strf(self):
         t = time.gmtime()
         huggle_wuggle = time.strftime("%y%y%y%y")
-        self.assertEqual(self.engine.process("{strf:%y%y%y%y}").body, huggle_wuggle)
+        self.assertEqual(self.engine.process("{strf:%y%y%y%y}").body, huggle_wuggle)  # type: ignore
 
     def test_basic_strf(self):
         year = time.strftime("%Y")
-        self.assertEqual(self.engine.process("Hehe, it's {strf:%Y}").body, f"Hehe, it's {year}")
+        self.assertEqual(self.engine.process("Hehe, it's {strf:%Y}").body, f"Hehe, it's {year}")  # type: ignore

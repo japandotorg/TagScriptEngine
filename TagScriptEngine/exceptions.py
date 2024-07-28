@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Tuple
 
 from discord.ext.commands import Cooldown
 
@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from .interpreter import Interpreter, Response
 
 
-__all__ = (
+__all__: Tuple[str, ...] = (
     "TagScriptError",
     "WorkloadExceededError",
     "ProcessError",
@@ -41,7 +41,7 @@ class ProcessError(TagScriptError):
         The interpreter used for processing.
     """
 
-    def __init__(self, error: Exception, response: Response, interpreter: Interpreter):
+    def __init__(self, error: Exception, response: Response, interpreter: Interpreter) -> None:
         self.original: Exception = error
         self.response: Response = response
         self.interpreter: Interpreter = interpreter
@@ -62,7 +62,7 @@ class BadColourArgument(EmbedParseError):
         The invalid input.
     """
 
-    def __init__(self, argument: str):
+    def __init__(self, argument: str) -> None:
         self.argument: str = argument
         super().__init__(f'Colour "{argument}" is invalid.')
 
@@ -77,7 +77,7 @@ class StopError(TagScriptError):
         The stop error message.
     """
 
-    def __init__(self, message: str):
+    def __init__(self, message: str) -> None:
         self.message: str = message
         super().__init__(message)
 
@@ -98,7 +98,7 @@ class CooldownExceeded(StopError):
         The seconds left til the cooldown ends.
     """
 
-    def __init__(self, message: str, cooldown: Cooldown, key: str, retry_after: float):
+    def __init__(self, message: str, cooldown: Cooldown, key: str, retry_after: float) -> None:
         self.cooldown: Cooldown = cooldown
         self.key: str = key
         self.retry_after: float = retry_after

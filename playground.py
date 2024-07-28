@@ -1,8 +1,10 @@
-from appJar import gui
+from typing import Any, List, Optional
+from appJar import gui as GUI
 
+import TagScriptEngine as tse
 from TagScriptEngine import Interpreter, block
 
-blocks = [
+blocks: List[tse.Block] = [
     block.MathBlock(),
     block.RandomBlock(),
     block.RangeBlock(),
@@ -18,16 +20,16 @@ blocks = [
     block.LooseVariableGetterBlock(),
     block.SubstringBlock(),
 ]
-x = Interpreter(blocks)
+x: Interpreter = Interpreter(blocks)
 
 
-def press(button):
-    o = x.process(app.getTextArea("input")).body
+def press(button: Any) -> None:
+    o: Optional[str] = x.process(app.getTextArea("input")).body
     app.clearTextArea("output")
     app.setTextArea("output", o)
 
 
-app = gui("TSE Playground", "750x450")
+app: GUI = GUI("TSE Playground", "750x450")
 app.setPadding([2, 2])
 app.setInPadding([2, 2])
 app.addTextArea("input", text="I see {rand:1,2,3,4} new items!", row=0, column=0)

@@ -1,7 +1,12 @@
-from typing import Optional
+from __future__ import annotations
+
+from typing import Optional, Tuple, cast
 
 from ..interface import Block
 from ..interpreter import Context
+
+
+__all__: Tuple[str, ...] = ("StrictVariableGetterBlock",)
 
 
 class StrictVariableGetterBlock(Block):
@@ -26,8 +31,8 @@ class StrictVariableGetterBlock(Block):
         # This is my variable.
     """
 
-    def will_accept(self, ctx: Context) -> bool:
+    def will_accept(self, ctx: Context) -> bool:  # type: ignore
         return ctx.verb.declaration in ctx.response.variables
 
     def process(self, ctx: Context) -> Optional[str]:
-        return ctx.response.variables[ctx.verb.declaration].get_value(ctx.verb)
+        return ctx.response.variables[cast(str, ctx.verb.declaration)].get_value(ctx.verb)

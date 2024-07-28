@@ -1,17 +1,19 @@
-import time
-from typing import Any, Dict, Optional
+from __future__ import annotations
 
-from discord.ext.commands import CooldownMapping
+import time
+from typing import Any, Dict, List, Optional, Tuple, cast
+
+from discord.ext.commands import Cooldown, CooldownMapping
 
 from ..exceptions import CooldownExceeded
 from ..interface import verb_required_block
 from ..interpreter import Context
 from .helpers import helper_split
 
-__all__ = ("CooldownBlock",)
+__all__: Tuple[str, ...] = ("CooldownBlock",)
 
 
-class CooldownBlock(verb_required_block(True, payload=True, parameter=True)):
+class CooldownBlock(verb_required_block(True, payload=True, parameter=True)):  # type: ignore
     """
     The cooldown block implements cooldowns when running a tag.
     The parameter requires 2 values to be passed: ``rate`` and ``per`` integers.
@@ -43,11 +45,11 @@ class CooldownBlock(verb_required_block(True, payload=True, parameter=True)):
         # Slow down! This tag can only be used 3 times per 3 seconds per channel. Try again in **0.74** seconds.
     """
 
-    ACCEPTED_NAMES = ("cooldown",)
+    ACCEPTED_NAMES: Tuple[str, ...] = ("cooldown",)
     COOLDOWNS: Dict[Any, CooldownMapping] = {}
 
     @classmethod
-    def create_cooldown(cls, key: Any, rate: int, per: int) -> CooldownMapping:
+    def create_cooldown(cls, key: Any, rate: float, per: int) -> CooldownMapping:
         cooldown = CooldownMapping.from_cooldown(rate, per, lambda x: x)
         cls.COOLDOWNS[key] = cooldown
         return cooldown
@@ -55,13 +57,13 @@ class CooldownBlock(verb_required_block(True, payload=True, parameter=True)):
     def process(self, ctx: Context) -> Optional[str]:
         verb = ctx.verb
         try:
-            rate, per = helper_split(verb.parameter, maxsplit=1)
+            rate, per = cast(List[str], helper_split(cast(str, verb.parameter), maxsplit=1))
             per = int(per)
             rate = float(rate)
         except (ValueError, TypeError):
             return
 
-        if split := helper_split(verb.payload, False, maxsplit=1):
+        if split := helper_split(cast(str, verb.payload), False, maxsplit=1):
             key, message = split
         else:
             key = verb.payload
@@ -72,14 +74,14 @@ class CooldownBlock(verb_required_block(True, payload=True, parameter=True)):
             cooldown_key = ctx.original_message
         try:
             cooldown = self.COOLDOWNS[cooldown_key]
-            base = cooldown._cooldown
+            base = cast(Cooldown, cooldown._cooldown)
             if (rate, per) != (base.rate, base.per):
                 cooldown = self.create_cooldown(cooldown_key, rate, per)
         except KeyError:
             cooldown = self.create_cooldown(cooldown_key, rate, per)
 
         current = time.time()
-        bucket = cooldown.get_bucket(key, current)
+        bucket = cast(Cooldown, cooldown.get_bucket(key, current))
         retry_after = bucket.update_rate_limit(current)
         if retry_after:
             retry_after = round(retry_after, 2)
@@ -89,5 +91,5 @@ class CooldownBlock(verb_required_block(True, payload=True, parameter=True)):
                 )
             else:
                 message = f"The bucket for {key} has reached its cooldown. Retry in {retry_after} seconds."
-            raise CooldownExceeded(message, bucket, key, retry_after)
+            raise CooldownExceeded(message, bucket, cast(str, key), retry_after)
         return ""

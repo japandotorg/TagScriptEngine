@@ -1,10 +1,19 @@
-from typing import Optional
+from __future__ import annotations
+
+import asyncio
+from types import TracebackType
+from typing import Any, Awaitable, Generator, Iterator, List, Optional, Tuple, Type, TypeVar
 
 from ..interface import Block, verb_required_block
 from ..interpreter import Context
 
+T = TypeVar("T")
 
-class CommandBlock(verb_required_block(True, payload=True)):
+
+__all__: Tuple[str, ...] = ("CommandBlock", "OverrideBlock", "SequentialGather")
+
+
+class CommandBlock(verb_required_block(True, payload=True)):  # type: ignore
     """
     Run a command as if the tag invoker had ran it. Only 3 command
     blocks can be used in a tag.
@@ -26,14 +35,14 @@ class CommandBlock(verb_required_block(True, payload=True)):
         # invokes ban command on the pinged user with the reason as "Chatflood/spam"
     """
 
-    ACCEPTED_NAMES = ("c", "com", "command")
+    ACCEPTED_NAMES: Tuple[str, ...] = ("c", "com", "command")
 
     def __init__(self, limit: int = 3):
         self.limit = limit
         super().__init__()
 
     def process(self, ctx: Context) -> Optional[str]:
-        command = ctx.verb.payload.strip()
+        command = ctx.verb.payload.strip()  # type: ignore
         actions = ctx.response.actions.get("commands")
         if actions:
             if len(actions) >= self.limit:
@@ -75,7 +84,7 @@ class OverrideBlock(Block):
         # overrides commands that require the mod role or have user permission requirements
     """
 
-    ACCEPTED_NAMES = ("override",)
+    ACCEPTED_NAMES: Tuple[str, ...] = ("override",)
 
     def process(self, ctx: Context) -> Optional[str]:
         param = ctx.verb.parameter
@@ -92,3 +101,41 @@ class OverrideBlock(Block):
         overrides[param] = True
         ctx.response.actions["overrides"] = overrides
         return ""
+
+
+class SequentialGather(Awaitable[T]):
+    """
+    Use this to run commands sequentially.
+
+    Parameters
+    ----------
+    awaitables : Tuple[Awaitable[T]]
+        the awaitables to be run sequentially.
+
+    Returns
+    -------
+    `List[T]`
+        the result object.
+    """
+
+    def __init__(self, *awaitables: Awaitable[T]) -> None:
+        self.__awaitables: Tuple[Awaitable[T], ...] = awaitables
+        self.__iterator: Iterator[Awaitable[T]] = iter(self.__awaitables)
+        self.__results: List[T] = []
+        self.__lock: asyncio.Lock = asyncio.Lock()
+
+    def __await__(self) -> Generator[Any, None, List[T]]:
+        return self.__aenter__().__await__()
+
+    async def __aenter__(self) -> List[T]:
+        async with self.__lock:
+            for coro in self.__iterator:
+                await asyncio.sleep(0.10)
+                result: T = await coro
+                self.__results.append(result)
+        return self.__results
+
+    async def __aexit__(
+        self, exc_type: Type[BaseException], exc_value: BaseException, traceback: TracebackType
+    ) -> None:
+        pass

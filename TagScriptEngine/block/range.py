@@ -1,11 +1,16 @@
+from __future__ import annotations
+
 import random
-from typing import Optional
+from typing import Optional, Tuple, cast
 
 from ..interface import verb_required_block
 from ..interpreter import Context
 
 
-class RangeBlock(verb_required_block(True, payload=True)):
+__all__: Tuple[str, ...] = ("RangeBlock",)
+
+
+class RangeBlock(verb_required_block(True, payload=True)):  # type: ignore
     """
     The range block picks a random number from a range of numbers seperated by ``-``.
     The number range is inclusive, so it can pick the starting/ending number as well.
@@ -32,28 +37,20 @@ class RangeBlock(verb_required_block(True, payload=True)):
         # I am guessing your height is 5.3ft.
     """
 
-    ACCEPTED_NAMES = ("rangef", "range")
+    ACCEPTED_NAMES: Tuple[str, ...] = ("rangef", "range")
 
     def process(self, ctx: Context) -> Optional[str]:
         try:
-            spl = ctx.verb.payload.split("-")
+            spl = cast(str, ctx.verb.payload).split("-")
             random.seed(ctx.verb.parameter)
-            if ctx.verb.declaration.lower() == "rangef":
-                lower = float(spl[0])
-                upper = float(spl[1])
-                base = random.randint(lower * 10, upper * 10) / 10
+            if cast(str, ctx.verb.declaration).lower() == "rangef":
+                lower: float = float(spl[0])
+                upper: float = float(spl[1])
+                base: float = random.randint(int(lower) * 10, int(upper) * 10) / 10
                 return str(base)
-                # base = random.randint(lower, upper)
-                # if base == upper:
-                #     return str(base)
-                # if ctx.verb.parameter != None:
-                #     random.seed(ctx.verb.parameter+"float")
-                # else:
-                #     random.seed(None)
-                # return str(str(base)+"."+str(random.randint(1,9)))
             else:
                 lower = int(float(spl[0]))
                 upper = int(float(spl[1]))
                 return str(random.randint(lower, upper))
-        except:
+        except Exception:
             return None
