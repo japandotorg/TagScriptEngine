@@ -1,8 +1,13 @@
-from typing import Optional
+from __future__ import annotations
 
-from ..interface import verb_required_block
+from typing import Optional, Tuple, Type, cast
+
+from ..interface import verb_required_block, Block
 from ..interpreter import Context
 from . import helper_parse_if, helper_parse_list_if, helper_split
+
+
+__all__: Tuple[str, ...] = ("AnyBlock", "AllBlock", "IfBlock")
 
 
 def parse_into_output(payload: str, result: Optional[bool]) -> Optional[str]:
@@ -10,7 +15,7 @@ def parse_into_output(payload: str, result: Optional[bool]) -> Optional[str]:
         return
     try:
         output = helper_split(payload, False)
-        if output != None and len(output) == 2:
+        if output is not None and len(output) == 2:
             if result:
                 return output[0]
             else:
@@ -19,14 +24,14 @@ def parse_into_output(payload: str, result: Optional[bool]) -> Optional[str]:
             return payload
         else:
             return ""
-    except:
+    except:  # noqa: E722
         return
 
 
-ImplicitPPRBlock = verb_required_block(True, payload=True, parameter=True)
+ImplicitPPRBlock: Block = verb_required_block(True, payload=True, parameter=True)
 
 
-class AnyBlock(ImplicitPPRBlock):
+class AnyBlock(cast(Type[Block], ImplicitPPRBlock)):
     """
     The any block checks that any of the passed expressions are true.
     Multiple expressions can be passed to the parameter by splitting them with ``|``.
@@ -52,14 +57,14 @@ class AnyBlock(ImplicitPPRBlock):
         How rude.
     """
 
-    ACCEPTED_NAMES = ("any", "or")
+    ACCEPTED_NAMES: Tuple[str, ...] = ("any", "or")
 
     def process(self, ctx: Context) -> Optional[str]:
         result = any(helper_parse_list_if(ctx.verb.parameter) or [])
-        return parse_into_output(ctx.verb.payload, result)
+        return parse_into_output(cast(str, ctx.verb.payload), result)
 
 
-class AllBlock(ImplicitPPRBlock):
+class AllBlock(cast(Type[Block], ImplicitPPRBlock)):
     """
     The all block checks that all of the passed expressions are true.
     Multiple expressions can be passed to the parameter by splitting them with ``|``.
@@ -85,14 +90,14 @@ class AllBlock(ImplicitPPRBlock):
         You picked 282.
     """
 
-    ACCEPTED_NAMES = ("all", "and")
+    ACCEPTED_NAMES: Tuple[str, ...] = ("all", "and")
 
     def process(self, ctx: Context) -> Optional[str]:
         result = all(helper_parse_list_if(ctx.verb.parameter) or [])
-        return parse_into_output(ctx.verb.payload, result)
+        return parse_into_output(cast(str, ctx.verb.payload), result)
 
 
-class IfBlock(ImplicitPPRBlock):
+class IfBlock(cast(Type[Block], ImplicitPPRBlock)):
     """
     The if block returns a message based on the passed expression to the parameter.
     An expression is represented by two values compared with an operator.
@@ -137,8 +142,8 @@ class IfBlock(ImplicitPPRBlock):
         # Too high, try again.
     """
 
-    ACCEPTED_NAMES = ("if",)
+    ACCEPTED_NAMES: Tuple[str, ...] = ("if",)
 
     def process(self, ctx: Context) -> Optional[str]:
-        result = helper_parse_if(ctx.verb.parameter)
-        return parse_into_output(ctx.verb.payload, result)
+        result = helper_parse_if(cast(str, ctx.verb.parameter))
+        return parse_into_output(cast(str, ctx.verb.payload), result)

@@ -1,11 +1,17 @@
-from typing import Optional
+from __future__ import annotations
+
+from typing import Optional, Tuple, Type, cast
 
 from ..adapter import StringAdapter
 from ..interface import verb_required_block
 from ..interpreter import Context
+from ..interface.block import Block
 
 
-class AssignmentBlock(verb_required_block(False, parameter=True)):
+__all__: Tuple[str, ...] = ("AssignmentBlock",)
+
+
+class AssignmentBlock(cast(Type[Block], verb_required_block(False, parameter=True))):
     """
     Variables are useful for choosing a value and referencing it later in a tag.
     Variables can be referenced using brackets as any other block.
@@ -29,7 +35,7 @@ class AssignmentBlock(verb_required_block(False, parameter=True)):
         # The day is Monday.
     """
 
-    ACCEPTED_NAMES = ("=", "assign", "let", "var")
+    ACCEPTED_NAMES: Tuple[str, ...] = ("=", "assign", "let", "var")
 
     def process(self, ctx: Context) -> Optional[str]:
         if ctx.verb.parameter is None:

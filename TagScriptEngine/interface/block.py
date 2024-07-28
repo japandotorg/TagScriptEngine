@@ -1,16 +1,31 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Optional, Protocol, Tuple, cast
 
 if TYPE_CHECKING:
     from ..interpreter import Context
 
 
-__all__ = ("Block", "verb_required_block")
+__all__: Tuple[str, ...] = ("Block", "verb_required_block")
 
 
-class Block:
+class _Block(Protocol):
+    ACCEPTED_NAMES: Tuple[str, ...]
+
+    def __repr__(self) -> str: ...
+
+    @classmethod
+    def will_accept(cls, ctx: Context) -> bool: ...
+
+    def pre_process(self, ctx: Context) -> Any: ...
+
+    def process(self, ctx: Context) -> Optional[str]: ...
+
+    def post_process(self, ctx: "Context") -> Any: ...
+
+
+class Block(_Block):
     """
     The base class for TagScript blocks.
 
@@ -22,9 +37,9 @@ class Block:
         The accepted names for this block. This ideally should be set as a class attribute.
     """
 
-    ACCEPTED_NAMES = ()
+    ACCEPTED_NAMES: Tuple[str, ...] = ()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{type(self).__qualname__} at {hex(id(self))}>"
 
     @classmethod
@@ -42,10 +57,10 @@ class Block:
         bool
             Whether the block should be processed for this :class:`~TagScriptEngine.interpreter.Context`.
         """
-        dec = ctx.verb.declaration.lower()
+        dec: str = cast(str, ctx.verb.declaration).lower()
         return dec in cls.ACCEPTED_NAMES
 
-    def pre_process(self, ctx: Context):
+    def pre_process(self, ctx: Context) -> Any:
         return None
 
     def process(self, ctx: Context) -> Optional[str]:
@@ -71,7 +86,7 @@ class Block:
         """
         raise NotImplementedError
 
-    def post_process(self, ctx: "interpreter.Context"):
+    def post_process(self, ctx: "Context") -> Any:
         return None
 
 
@@ -102,7 +117,8 @@ def verb_required_block(
             return f"VerbRequiredBlock(implicit={implicit!r}, payload={payload!r}, parameter={parameter!r})"
 
     class VerbRequiredBlock(Block, metaclass=RequireMeta):
-        def will_accept(self, ctx: Context) -> bool:
+        @classmethod
+        def will_accept(cls, ctx: Context) -> bool:
             verb = ctx.verb
             if payload and not check(verb.payload):
                 return False
@@ -110,4 +126,4 @@ def verb_required_block(
                 return False
             return super().will_accept(ctx)
 
-    return VerbRequiredBlock
+    return VerbRequiredBlock  # type: ignore

@@ -1,11 +1,17 @@
+from __future__ import annotations
+
+from typing import Tuple
 from inspect import ismethod
 
 from ..interface import Adapter
 from ..verb import Verb
 
 
+__all__: Tuple[str, ...] = ("SafeObjectAdapter",)
+
+
 class SafeObjectAdapter(Adapter):
-    __slots__ = ("object",)
+    __slots__: Tuple[str, ...] = ("object",)
 
     def __init__(self, base) -> None:
         self.object = base
@@ -17,13 +23,13 @@ class SafeObjectAdapter(Adapter):
         if ctx.parameter is None:
             return str(self.object)
         if ctx.parameter.startswith("_") or "." in ctx.parameter:
-            return
+            return  # type: ignore
         try:
             attribute = getattr(self.object, ctx.parameter)
         except AttributeError:
-            return
+            return  # type: ignore
         if ismethod(attribute):
-            return
+            return  # type: ignore
         if isinstance(attribute, float):
             attribute = int(attribute)
         return str(attribute)

@@ -8,3 +8,19 @@ line-length = 99
 [tool.isort]
 profile = "black"
 line_length = 99
+
+[tool.pyright]
+include = [
+    "TagScriptEngine",
+    "TagScriptEngine/adapter",
+    "TagScriptEngine/block",
+    "TagScriptEngine/interface",
+]
+exclude = [
+    "**/__pycache__",
+    "build",
+    "dist",
+    "docs",
+]
+pythonVersion = "3.8"
+typeCheckingMode = "basic"

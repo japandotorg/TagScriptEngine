@@ -1,5 +1,13 @@
+from __future__ import annotations
+
+from typing import Tuple
+
 from ..interface import Block
 from ..interpreter import Context
+
+
+__all__: Tuple[str, ...] = ("UpperBlock", "LowerBlock")
+
 
 class UpperBlock(Block):
     """Converts the given text to uppercase.
@@ -21,11 +29,12 @@ class UpperBlock(Block):
         # You have entered HELLO WORLD!
     """
 
-    ACCEPTED_NAMES = ("upper","uppercase")
+    ACCEPTED_NAMES: Tuple[str, ...] = ("upper", "uppercase")
 
     def process(self, ctx: Context) -> str:
         text = str(ctx.verb.parameter).upper()
         return "" if text == "NONE" else text
+
 
 class LowerBlock(Block):
     """Converts the given text to lowercase.
@@ -47,7 +56,7 @@ class LowerBlock(Block):
         # You have entered hello world!
     """
 
-    ACCEPTED_NAMES = ("lower","lowercase")
+    ACCEPTED_NAMES: Tuple[str, ...] = ("lower", "lowercase")
 
     def process(self, ctx: Context) -> str:
         text = str(ctx.verb.parameter).lower()

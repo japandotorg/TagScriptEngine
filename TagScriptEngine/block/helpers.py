@@ -1,10 +1,35 @@
+from __future__ import annotations
+
 import re
-from typing import List, Optional
+from typing import Dict, List, Optional, Tuple
 
-__all__ = ("implicit_bool", "helper_parse_if", "helper_split", "helper_parse_list_if")
 
-SPLIT_REGEX = re.compile(r"(?<!\\)\|")
-BOOL_LOOKUP = {"true": True, "false": False}  # potentially add more bool values
+__all__: Tuple[str, ...] = (
+    "implicit_bool",
+    "helper_parse_if",
+    "helper_split",
+    "easier_helper_split",
+    "helper_parse_list_if",
+)
+
+SPLIT_REGEX: re.Pattern[str] = re.compile(r"(?<!\\)\|")
+EASIER_SPLIT_REGEX: re.Pattern[str] = re.compile(r"/[\~;]/")
+BOOL_LOOKUP: Dict[str, bool] = {
+    "true": True,
+    "false": False,
+    "enable": True,
+    "disable": False,
+    "yes": True,
+    "no": False,
+    "on": True,
+    "off": False,
+    "y": True,
+    "n": False,
+    "t": True,
+    "f": False,
+    "1": True,
+    "0": False,
+}
 
 
 def implicit_bool(string: str) -> Optional[bool]:
@@ -82,12 +107,12 @@ def helper_parse_if(string: str) -> Optional[bool]:
         if "<" in string:
             spl = string.split("<")
             return float(spl[0].strip()) < float(spl[1].strip())
-    except:
+    except Exception:
         pass
 
 
 def helper_split(
-    split_string: str, easy: bool = True, *, maxsplit: int = None
+    split_string: str, easy: bool = True, *, maxsplit: Optional[int] = None
 ) -> Optional[List[str]]:
     """
     A helper method to universalize the splitting logic used in multiple
@@ -105,6 +130,30 @@ def helper_split(
             return split_string.split("~", *args)
         if "," in split_string:
             return split_string.split(",", *args)
+    return
+
+
+def easier_helper_split(
+    split_string: str, *, maxsplit: Optional[int] = None
+) -> Optional[List[str]]:
+    """
+    A helper method to universalize the splitting logic used in blocks
+    and adapters. Please use this wherever a verb needs content to be
+    chopped at `|`, `,` or `;`.
+
+    >>> easier_helper_split("this, should|work")
+    ["this, should", "work"]
+
+    >>> easier_helper_split("this, should;work~as well")
+    ["this, should", "work", "as well"]
+    """
+    args = (maxsplit,) if maxsplit is not None else ()
+    if "|" in split_string:
+        return SPLIT_REGEX.split(split_string, *args)
+    if "~" in split_string:
+        return EASIER_SPLIT_REGEX.split(split_string, *args)
+    if ";" in split_string:
+        return EASIER_SPLIT_REGEX.split(split_string, *args)
     return
 
 

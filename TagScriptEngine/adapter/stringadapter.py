@@ -1,10 +1,17 @@
+from __future__ import annotations
+
+from typing import Tuple
+
 from ..interface import Adapter
 from ..utils import escape_content
 from ..verb import Verb
 
 
+__all__: Tuple[str, ...] = ("StringAdapter",)
+
+
 class StringAdapter(Adapter):
-    __slots__ = ("string", "escape_content")
+    __slots__: Tuple[str, ...] = ("string", "escape_content")
 
     def __init__(self, string: str, *, escape: bool = False) -> None:
         self.string: str = str(string)
@@ -33,7 +40,7 @@ class StringAdapter(Adapter):
                     return splitter.join(self.string.split(splitter)[index:])
                 else:
                     return self.string.split(splitter)[index]
-        except:
+        except Exception:
             return self.string
 
     def return_value(self, string: str) -> str:

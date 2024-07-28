@@ -1,10 +1,15 @@
-from typing import Optional
+from __future__ import annotations
 
-from ..interface import verb_required_block
+from typing import Optional, Tuple, Type, cast
+
+from ..interface import verb_required_block, Block
 from ..interpreter import Context
 
 
-class RedirectBlock(verb_required_block(True, parameter=True)):
+__all__: Tuple[str, ...] = ("RedirectBlock",)
+
+
+class RedirectBlock(cast(Type[Block], verb_required_block(True, parameter=True))):
     """
     Redirects the tag response to either the given channel, the author's DMs,
     or uses a reply based on what is passed to the parameter.
@@ -26,11 +31,11 @@ class RedirectBlock(verb_required_block(True, parameter=True)):
     ACCEPTED_NAMES = ("redirect",)
 
     def process(self, ctx: Context) -> Optional[str]:
-        param = ctx.verb.parameter.strip()
+        param: str = cast(str, ctx.verb.parameter).strip()
         if param.lower() == "dm":
-            target = "dm"
+            target: str = "dm"
         elif param.lower() == "reply":
-            target = "reply"
+            target: str = "reply"
         else:
             target = param
         ctx.response.actions["target"] = target

@@ -1,6 +1,6 @@
 import unittest
 
-from TagScriptEngine import Interpreter, WorkloadExceededError, adapter, block, interface
+from TagScriptEngine import Interpreter, WorkloadExceededError, adapter, block
 
 
 class TestEdgeCases(unittest.TestCase):
@@ -115,9 +115,9 @@ class TestEdgeCases(unittest.TestCase):
 {c:{if({target(id)}=={user(id)}):choose {error},{error}|setnick {target(id)} {join():{username}}}}
 """
         data = {"target": adapter.StringAdapter("Basic Username")}
-        result = self.engine.process(script, data).body
+        result = self.engine.process(script, data).body  # type: ignore
         print(result)
-        self.assertTrue(len(result) < 150)
+        self.assertTrue(len(result) < 150)  # type: ignore
 
     def test_recursion(self):
         data = {"target": adapter.StringAdapter("Basic Username")}
@@ -156,4 +156,4 @@ class TestEdgeCases(unittest.TestCase):
         {recursion}
 """
 
-            self.engine.process(script, data, charlimit=2000)
+            self.engine.process(script, data, charlimit=2000)  # type: ignore

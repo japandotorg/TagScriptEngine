@@ -1,11 +1,16 @@
-import random
-from typing import Optional
+from __future__ import annotations
 
-from ..interface import verb_required_block
+import random
+from typing import Optional, Tuple, Type, cast
+
+from ..interface import verb_required_block, Block
 from ..interpreter import Context
 
 
-class RandomBlock(verb_required_block(True, payload=True)):
+__all__: Tuple[str, ...] = ("RandomBlock",)
+
+
+class RandomBlock(cast(Type[Block], verb_required_block(True, payload=True))):
     """
     Pick a random item from a list of strings, split by either ``~``
     or ``,``. An optional seed can be provided to the parameter to
@@ -33,14 +38,14 @@ class RandomBlock(verb_required_block(True, payload=True)):
         # Assigns a random insult to the insult variable
     """
 
-    ACCEPTED_NAMES = ("random", "#", "rand")
+    ACCEPTED_NAMES: Tuple[str, ...] = ("random", "#", "rand")
 
     def process(self, ctx: Context) -> Optional[str]:
         spl = []
-        if "~" in ctx.verb.payload:
-            spl = ctx.verb.payload.split("~")
+        if "~" in (payload := cast(str, ctx.verb.payload)):
+            spl = payload.split("~")
         else:
-            spl = ctx.verb.payload.split(",")
+            spl = payload.split(",")
         random.seed(ctx.verb.parameter)
 
         return random.choice(spl)

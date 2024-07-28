@@ -1,10 +1,15 @@
-from typing import Optional
+from __future__ import annotations
 
-from ..interface import verb_required_block
+from typing import Optional, Tuple, Type, cast
+
+from ..interface import verb_required_block, Block
 from ..interpreter import Context
 
 
-class RequireBlock(verb_required_block(True, parameter=True)):
+__all__: Tuple[str, ...] = ("RequireBlock", "BlacklistBlock")
+
+
+class RequireBlock(cast(Type[Block], verb_required_block(True, parameter=True))):
     """
     The require block will attempt to convert the given parameter into a channel
     or role, using name or ID. If the user running the tag is not in the targeted
@@ -27,20 +32,20 @@ class RequireBlock(verb_required_block(True, parameter=True)):
         {require(757425366209134764, 668713062186090506, 737961895356792882):You aren't allowed to use this tag.}
     """
 
-    ACCEPTED_NAMES = ("require", "whitelist")
+    ACCEPTED_NAMES: Tuple[str, ...] = ("require", "whitelist")
 
     def process(self, ctx: Context) -> Optional[str]:
         actions = ctx.response.actions.get("requires")
         if actions:
             return None
         ctx.response.actions["requires"] = {
-            "items": [i.strip() for i in ctx.verb.parameter.split(",")],
+            "items": [i.strip() for i in cast(str, ctx.verb.parameter).split(",")],
             "response": ctx.verb.payload,
         }
         return ""
 
 
-class BlacklistBlock(verb_required_block(True, parameter=True)):
+class BlacklistBlock(cast(Type[Block], verb_required_block(True, parameter=True))):
     """
     The blacklist block will attempt to convert the given parameter into a channel
     or role, using name or ID. If the user running the tag is in the targeted
@@ -61,14 +66,14 @@ class BlacklistBlock(verb_required_block(True, parameter=True)):
         {blacklist(Tag Blacklist, 668713062186090506):You are blacklisted from using tags.}
     """
 
-    ACCEPTED_NAMES = ("blacklist",)
+    ACCEPTED_NAMES: Tuple[str, ...] = ("blacklist",)
 
     def process(self, ctx: Context) -> Optional[str]:
         actions = ctx.response.actions.get("blacklist")
         if actions:
             return None
         ctx.response.actions["blacklist"] = {
-            "items": [i.strip() for i in ctx.verb.parameter.split(",")],
+            "items": [i.strip() for i in cast(str, ctx.verb.parameter).split(",")],
             "response": ctx.verb.payload,
         }
         return ""

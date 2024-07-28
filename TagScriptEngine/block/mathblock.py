@@ -1,8 +1,8 @@
-from __future__ import division
+from __future__ import division, annotations
 
 import math
 import operator
-from typing import Optional
+from typing import Any, Callable, Dict, List, Tuple, cast, Optional as TypingOptional
 
 from pyparsing import (
     CaselessLiteral,
@@ -11,6 +11,7 @@ from pyparsing import (
     Group,
     Literal,
     Optional,
+    ParserElement,
     Word,
     ZeroOrMore,
     alphas,
@@ -22,20 +23,23 @@ from ..interface import Block
 from ..interpreter import Context
 
 
+__all__: Tuple[str, ...] = ("MathBlock",)
+
+
 class NumericStringParser(object):
     """
     Most of this code comes from the fourFn.py pyparsing example
 
     """
 
-    def pushFirst(self, strg, loc, toks):
+    def pushFirst(self, strg: Any, loc: Any, toks: Any) -> Any:
         self.exprStack.append(toks[0])
 
-    def pushUMinus(self, strg, loc, toks):
+    def pushUMinus(self, strg: Any, loc: Any, toks: Any) -> Any:
         if toks and toks[0] == "-":
             self.exprStack.append("unary -")
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         expop   :: '^'
         multop  :: '*' | '/'
@@ -46,32 +50,32 @@ class NumericStringParser(object):
         term    :: factor [ multop factor ]*
         expr    :: term [ addop term ]*
         """
-        point = Literal(".")
-        e = CaselessLiteral("E")
-        fnumber = Combine(
+        point: Literal = Literal(".")
+        e: CaselessLiteral = CaselessLiteral("E")
+        fnumber: Combine = Combine(
             Word("+-" + nums, nums)
             + Optional(point + Optional(Word(nums)))
             + Optional(e + Word("+-" + nums, nums))
         )
-        ident = Word(alphas, alphas + nums + "_$")
-        mod = Literal("%")
-        plus = Literal("+")
-        minus = Literal("-")
-        mult = Literal("*")
-        iadd = Literal("+=")
-        imult = Literal("*=")
-        idiv = Literal("/=")
-        isub = Literal("-=")
-        div = Literal("/")
-        lpar = Literal("(").suppress()
-        rpar = Literal(")").suppress()
-        addop = plus | minus
-        multop = mult | div | mod
-        iop = iadd | isub | imult | idiv
-        expop = Literal("^")
-        pi = CaselessLiteral("PI")
-        expr = Forward()
-        atom = (
+        ident: Word = Word(alphas, alphas + nums + "_$")
+        mod: Literal = Literal("%")
+        plus: Literal = Literal("+")
+        minus: Literal = Literal("-")
+        mult: Literal = Literal("*")
+        iadd: Literal = Literal("+=")
+        imult: Literal = Literal("*=")
+        idiv: Literal = Literal("/=")
+        isub: Literal = Literal("-=")
+        div: Literal = Literal("/")
+        lpar: ParserElement = Literal("(").suppress()
+        rpar: ParserElement = Literal(")").suppress()
+        addop: ParserElement = plus | minus
+        multop: ParserElement = mult | div | mod
+        iop: ParserElement = iadd | isub | imult | idiv
+        expop: Literal = Literal("^")
+        pi: CaselessLiteral = CaselessLiteral("PI")
+        expr: Forward = Forward()
+        atom: ParserElement = (
             (
                 Optional(oneOf("- +"))
                 + (ident + lpar + expr + rpar | pi | e | fnumber).setParseAction(self.pushFirst)
@@ -81,18 +85,18 @@ class NumericStringParser(object):
         # by defining exponentiation as "atom [ ^ factor ]..." instead of
         # "atom [ ^ atom ]...", we get right-to-left exponents, instead of left-to-right
         # that is, 2^3^2 = 2^(3^2), not (2^3)^2.
-        factor = Forward()
-        factor << atom + ZeroOrMore((expop + factor).setParseAction(self.pushFirst))
-        term = factor + ZeroOrMore((multop + factor).setParseAction(self.pushFirst))
-        expr << term + ZeroOrMore((addop + term).setParseAction(self.pushFirst))
-        final = expr + ZeroOrMore((iop + expr).setParseAction(self.pushFirst))
+        factor: Forward = Forward()
+        factor << atom + ZeroOrMore((expop + factor).setParseAction(self.pushFirst))  # type: ignore
+        term: ParserElement = factor + ZeroOrMore((multop + factor).setParseAction(self.pushFirst))
+        expr << term + ZeroOrMore((addop + term).setParseAction(self.pushFirst))  # type: ignore
+        final: ParserElement = expr + ZeroOrMore((iop + expr).setParseAction(self.pushFirst))
         # addop_term = ( addop + term ).setParseAction( self.pushFirst )
         # general_term = term + ZeroOrMore( addop_term ) | OneOrMore( addop_term)
         # expr <<  general_term
-        self.bnf = final
+        self.bnf: ParserElement = final
         # map operator symbols to corresponding arithmetic operations
-        epsilon = 1e-12
-        self.opn = {
+        epsilon: float = 1e-12
+        self.opn: Dict[str, Callable[[Any, Any], Any]] = {
             "+": operator.add,
             "-": operator.sub,
             "+=": operator.iadd,
@@ -104,7 +108,7 @@ class NumericStringParser(object):
             "^": operator.pow,
             "%": operator.mod,
         }
-        self.fn = {
+        self.fn: Dict[str, Any] = {
             "sin": math.sin,
             "cos": math.cos,
             "tan": math.tan,
@@ -122,7 +126,7 @@ class NumericStringParser(object):
             "sqrt": math.sqrt,
         }
 
-    def evaluateStack(self, s):
+    def evaluateStack(self, s: List[Any]) -> Any:
         op = s.pop()
         if op == "unary -":
             return -self.evaluateStack(s)
@@ -141,20 +145,20 @@ class NumericStringParser(object):
         else:
             return float(op)
 
-    def eval(self, num_string, parseAll=True):
+    def eval(self, num_string: str, parseAll: bool = True) -> Any:
         self.exprStack = []
-        results = self.bnf.parseString(num_string, parseAll)
+        results = self.bnf.parseString(num_string, parseAll)  # noqa: F841
         return self.evaluateStack(self.exprStack[:])
 
 
-NSP = NumericStringParser()
+NSP: NumericStringParser = NumericStringParser()
 
 
 class MathBlock(Block):
-    ACCEPTED_NAMES = ("math", "m", "+", "calc")
+    ACCEPTED_NAMES: Tuple[str, ...] = ("math", "m", "+", "calc")
 
-    def process(self, ctx: Context):
+    def process(self, ctx: Context) -> TypingOptional[str]:
         try:
-            return str(NSP.eval(ctx.verb.payload.strip(" ")))
-        except:
+            return str(NSP.eval(cast(str, ctx.verb.payload).strip(" ")))
+        except Exception:
             return None

@@ -1,8 +1,15 @@
-from ..interface import verb_required_block
+from __future__ import annotations
+
+from typing import Optional, Tuple, Type, cast
+
+from ..interface import verb_required_block, Block
 from ..interpreter import Context
 
 
-class ReplaceBlock(verb_required_block(True, payload=True, parameter=True)):
+__all__: Tuple[str, ...] = ("ReplaceBlock", "PythonBlock")
+
+
+class ReplaceBlock(cast(Type[Block], verb_required_block(True, payload=True, parameter=True))):
     """
     The replace block will replace specific characters in a string.
     The parameter should split by a ``,``, containing the characters to find
@@ -29,18 +36,18 @@ class ReplaceBlock(verb_required_block(True, payload=True, parameter=True)):
         # T e s t
     """
 
-    ACCEPTED_NAMES = ("replace",)
+    ACCEPTED_NAMES: Tuple[str, ...] = ("replace",)
 
-    def process(self, ctx: Context):
+    def process(self, ctx: Context) -> Optional[str]:
         try:
-            before, after = ctx.verb.parameter.split(",", 1)
+            before, after = cast(str, ctx.verb.parameter).split(",", 1)
         except ValueError:
             return
 
-        return ctx.verb.payload.replace(before, after)
+        return cast(str, ctx.verb.payload).replace(before, after)
 
 
-class PythonBlock(verb_required_block(True, payload=True, parameter=True)):
+class PythonBlock(cast(Type[Block], verb_required_block(True, payload=True, parameter=True))):
     """
     The in block serves three different purposes depending on the alias that is used.
 
@@ -81,18 +88,23 @@ class PythonBlock(verb_required_block(True, payload=True, parameter=True)):
         # -1
     """
 
-    def will_accept(self, ctx: Context):
-        dec = ctx.verb.declaration.lower()
+    def will_accept(self, ctx: Context) -> bool:  # type: ignore
+        dec = cast(str, ctx.verb.declaration).lower()
         return dec in ("contains", "in", "index")
 
-    def process(self, ctx: Context):
-        dec = ctx.verb.declaration.lower()
+    def process(self, ctx: Context) -> str:
+        dec: str = cast(str, ctx.verb.declaration).lower()
         if dec == "contains":
-            return str(bool(ctx.verb.parameter in ctx.verb.payload.split())).lower()
+            return str(bool(ctx.verb.parameter in cast(str, ctx.verb.payload).split())).lower()
         elif dec == "in":
-            return str(bool(ctx.verb.parameter in ctx.verb.payload)).lower()
+            return str(bool(cast(str, ctx.verb.parameter) in cast(str, ctx.verb.payload))).lower()
         else:
             try:
-                return str(ctx.verb.payload.strip().split().index(ctx.verb.parameter))
+                return str(
+                    cast(str, ctx.verb.payload)
+                    .strip()
+                    .split()
+                    .index(cast(str, ctx.verb.parameter))
+                )
             except ValueError:
                 return "-1"

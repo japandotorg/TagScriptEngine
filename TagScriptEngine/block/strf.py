@@ -1,8 +1,13 @@
+from __future__ import annotations
+
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, Tuple, cast
 
 from ..interface import Block
 from ..interpreter import Context
+
+
+__all__: Tuple[str, ...] = ("StrfBlock",)
 
 
 class StrfBlock(Block):
@@ -39,10 +44,10 @@ class StrfBlock(Block):
         # 1629182008
     """
 
-    ACCEPTED_NAMES = ("strf", "unix")
+    ACCEPTED_NAMES: Tuple[str, ...] = ("strf", "unix")
 
     def process(self, ctx: Context) -> Optional[str]:
-        if ctx.verb.declaration.lower() == "unix":
+        if cast(str, ctx.verb.declaration).lower() == "unix":
             return str(int(datetime.now(timezone.utc).timestamp()))
         if not ctx.verb.payload:
             return None
@@ -50,7 +55,7 @@ class StrfBlock(Block):
             if ctx.verb.parameter.isdigit():
                 try:
                     t = datetime.fromtimestamp(int(ctx.verb.parameter))
-                except:
+                except Exception:
                     return
             else:
                 try:
