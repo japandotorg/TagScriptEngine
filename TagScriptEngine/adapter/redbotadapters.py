@@ -23,12 +23,12 @@ __all__: Tuple[str, ...] = ("RedCommandAdapter", "RedBotAdapter")
 
 
 class RedCommandAdapter(SimpleAdapter["Command"]):
-    if not _has_redbot:
-        raise ImportError("A Red-DiscordBot instance is required to use this.", name="redbot")
-
     def __init__(self, base: Command, *, signature: Optional[str] = None) -> None:
         super().__init__(base=base)
         self.signature: Optional[str] = signature
+
+        if not _has_redbot:
+            raise ImportError("A Red-DiscordBot instance is required to use this.", name="redbot")
 
     def update_attributes(self) -> None:
         command: Command = self.object
